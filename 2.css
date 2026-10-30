@@ -1,0 +1,101 @@
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.tab-nav{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  width: 100%;
+  border-top: 1px solid #ccc;
+}
+.tab-item{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  padding:8px 0;
+  position: relative; /*角标绝对定位必备*/
+  cursor: pointer;
+}
+.tab-item svg{
+  font-size: 24px;
+  margin: 5px;
+}
+.tab-item span{
+  font-size:14px;
+}
+/* 选中active：图标+文字一起变红 */
+.tab-item.active {
+  color: #ff6347;
+}
+.tab-item.active span {
+  color: #ff6347;
+}
+
+/* ====== 角标红点样式 ====== */
+/* 小圆红点 首页 */
+.budge-dot{
+  width:8px;
+  height:8px;
+  background:red;
+  border-radius:50%;
+  position:absolute;
+  top:4px;
+  right:calc(50% - 18px);
+}
+/* 数字角标（喜欢：6） */
+.budge-num{
+  min-width:16px;
+  height:16px;
+  line-height:16px;
+  font-size:10px;
+  color:#fff;
+  background:red;
+  text-align:center;
+  border-radius:8px;
+  position:absolute;
+  top:4px;
+  right:calc(50% - 18px);
+}
+/* 购物车：黑圈套红点 */
+.budge-border{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  position:absolute;
+  top:4px;
+  right:calc(50% - 18px);
+  /* 黑色外圈 */
+  border: 2px solid #000;
+  background-color: red;
+}
+/* 收藏 100+ */
+.budge-dot.max{
+  width:auto;
+  padding:0 4px;
+  min-width:20px;
+  border-radius:10px;
+  font-size:10px;
+  color:white;
+  line-height:16px;
+  height:16px;
+}
+
+body{
+  padding-bottom:60px;
+}

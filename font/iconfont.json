@@ -1,0 +1,37 @@
+{
+  "id": "5231950",
+  "name": "no name",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "48416008",
+      "name": "彩虹云",
+      "font_class": "caihongyun",
+      "unicode": "e78b",
+      "unicode_decimal": 59275
+    },
+    {
+      "icon_id": "48416009",
+      "name": "棒棒糖",
+      "font_class": "bangbangtang",
+      "unicode": "e78c",
+      "unicode_decimal": 59276
+    },
+    {
+      "icon_id": "48416028",
+      "name": "流星",
+      "font_class": "liuxing",
+      "unicode": "e78d",
+      "unicode_decimal": 59277
+    },
+    {
+      "icon_id": "48416071",
+      "name": "寿司",
+      "font_class": "shousi",
+      "unicode": "e78e",
+      "unicode_decimal": 59278
+    }
+  ]
+}

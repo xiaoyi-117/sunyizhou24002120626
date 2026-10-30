@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据类型与运算符</title>
+    <style>
+        div{
+            width: 180px;
+            height: 180px;
+            background-color: rgb(210, 192, 235);
+            margin: 10px;
+            color: rgb(232, 240, 203);
+            text-align: center;
+            line-height: 180px;
+            font-size: 100px;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+     <script>
+        var a=6, b=1;
+        console.log(a=+b);
+        console.log(a++,++b);
+        console.log(a-b>0?a:b);
+        console.log(true&&false,true||false,true);
+        var str="hello world",num=123,bl=true,obj={name:"张三",age:18},ud,kong;
+        console.log(typeof b,typeof obj,typeof bl,typeof obj,typeof ud,typeof kong);
+        console.log(0.1+0.2==0.3);
+
+        console.log(1+"1","1"-1,"11"+1-1);
+        console.log("xiaoyi"-1);
+
+        console.log(isNaN(NaN));
+        console.log (NaN==NaN,null==null);
+
+        console.log(parseInt(123,10));
+        //判断是否整数
+        var num=123;
+        console.log(num==parseInt(num));
+        //第二个参数进制
+        console.log(parseInt(100,16));
+
+        //1‑100求和
+        var sum=0;
+        for(var i=1;i<=100;i++){
+            sum += i;
+        }
+        console.log("1~100总和",sum);
+
+        //数7游戏：7倍数、个位7、十位7 不显示数字
+        for(var i=1;i<=99;i++){
+            if(i%7===0 || i%10===7 || Math.floor(i/10)===7){
+                document.write("<div></div>");
+            }
+            else{
+                document.write("<div>"+i+"</div>")
+            }
+        }
+        //课后练习；回文数显示
+        document.write("<hr>");
+        document.write("<h3>1~1000回文数</h3>")
+        for(var i = 1; i <= 1000; i++){
+         var s = i.toString();
+         var reverseS = s.split('').reverse().join('');
+        if(s === reverseS){
+         document.write("<div>"+i+"</div>");
+        }else{
+         document.write("<div></div>");
+    }
+}
+    </script>
+</body>
+</html>
