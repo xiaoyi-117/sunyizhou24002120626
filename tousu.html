@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周
+  建立时间：2026-11-04
+  使用大模型：GLM-5.3-Flash
+  功能名称：投诉信息 Tab 选项卡（复用 js/tab.js 组件）
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投诉信息选项卡</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: SimSun, "宋体", serif;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    /* 返回首页链接 */
+    .syz_back-home {
+      align-self: flex-start;
+      margin-bottom: 16px;
+      color: #3498db;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .syz_back-home:hover {
+      text-decoration: underline;
+    }
+
+    /* 选项卡容器：细边框盒子 */
+    .syz_tab-box {
+      width: 400px;
+      max-width: 100%;
+      background: #fff;
+      border: 1px solid #999;
+    }
+
+    /* 选项卡按钮栏：灰色底条 */
+    .syz_tab-bar {
+      display: flex;
+      background: #e7e7e7;
+      border-bottom: 1px solid #999;
+    }
+
+    .syz_tab-btn {
+      flex: 1;
+      padding: 9px 0;
+      font-size: 15px;
+      font-family: SimSun, "宋体", serif;
+      border: none;
+      background: transparent;
+      color: #333;
+      cursor: pointer;
+      border-right: 1px solid #d5d5d5;
+    }
+
+    .syz_tab-btn:last-child {
+      border-right: none;
+    }
+
+    .syz_tab-btn:hover {
+      color: #c00;
+    }
+
+    /* 按钮选中状态：白底加粗，与内容区连成一体 */
+    .syz_tab-btn.syz_active {
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* 选项卡面板 */
+    .syz_tab-panel {
+      display: none;
+      padding: 14px 16px;
+    }
+
+    /* 面板显示状态 */
+    .syz_tab-panel.syz_show {
+      display: block;
+    }
+
+    /* 新闻标题条目：「·」开头，黑字，行距宽松 */
+    .syz_news-item {
+      list-style: none;
+      font-size: 14px;
+      color: #000;
+      line-height: 2.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <a class="syz_back-home" href="index.html">返回首页</a>
+
+  <div class="syz_tab-box" id="syz_tsBox">
+    <div class="syz_tab-bar" id="syz_tsBar">
+      <button class="syz_tab-btn syz_active" type="button">最新投诉</button>
+      <button class="syz_tab-btn" type="button">官方回应</button>
+      <button class="syz_tab-btn" type="button">追踪调查</button>
+    </div>
+
+    <!-- 最新投诉：默认选中（syz_active + syz_show） -->
+    <div class="syz_tab-panel syz_show" id="syz_tsPanel0">
+      <p class="syz_news-item">·北京火车站出租车乱调查 司机称计价器坏</p>
+      <p class="syz_news-item">·公园仙人掌遭刻字"毁容" 一棵仙人掌被刻</p>
+      <p class="syz_news-item">·昆明再现游客刻字留名 网友谴责(组图)</p>
+      <p class="syz_news-item">·四川一星级公园开建1年未开放变"菜地"</p>
+      <p class="syz_news-item">·北京北海公园暗藏高端会所 被指高消费</p>
+      <p class="syz_news-item">·北京北海金丝楠木柱遭英文"签名"破坏</p>
+      <p class="syz_news-item">·北京动物园售票玩猫腻 低价门票遭"雪藏"</p>
+      <p class="syz_news-item">·女子未参加"无购物团"投诉旅行社 称行程缩水</p>
+      <p class="syz_news-item">·老年人参团游权益易受损 旅行社核验身份难</p>
+    </div>
+
+    <div class="syz_tab-panel" id="syz_tsPanel1">
+      <p class="syz_news-item">·铁路部门回应出租车乱象：联合整治计价器故障</p>
+      <p class="syz_news-item">·园林部门回应仙人掌遭刻字：加强巡查增设监控</p>
+      <p class="syz_news-item">·昆明文旅局回应游客不文明行为：纳入黑名单</p>
+      <p class="syz_news-item">·四川相关部门回应公园未开放：督促年内开放</p>
+      <p class="syz_news-item">·北海公园回应高端会所：合同到期不再续约</p>
+      <p class="syz_news-item">·动物园主管部门回应票价猫腻：核查票务渠道</p>
+      <p class="syz_news-item">·旅游局回应无购物团投诉：责令旅行社整改</p>
+      <p class="syz_news-item">·老龄委回应老年游权益问题：推进服务规范化</p>
+    </div>
+
+    <div class="syz_tab-panel" id="syz_tsPanel2">
+      <p class="syz_news-item">·记者调查：出租车计价器"坏了"背后的潜规则</p>
+      <p class="syz_news-item">·追踪：刻字仙人掌已围挡保护 游客被劝阻</p>
+      <p class="syz_news-item">·调查：星级公园停工缘于资金链断裂</p>
+      <p class="syz_news-item">·暗访：高端会所人均消费最低500元</p>
+      <p class="syz_news-item">·调查：低价门票被捆绑销售 二次消费是主因</p>
+      <p class="syz_news-item">·后续：涉事旅行社退赔团费并公开致歉</p>
+      <p class="syz_news-item">·调查报告：老年游市场乱象多 需多方合力监管</p>
+    </div>
+  </div>
+
+  <!-- 外部引用 js 文件夹中的可复用选项卡组件（与 tab2.html 共用同一组件） -->
+  <script src="js/tab.js"></script>
+  <script>
+    // 函数功能：初始化投诉选项卡组件——复用 syz_initTabs，传入本页的容器和类名配置；最新投诉在 HTML 中默认带 syz_active / syz_show 类，作为默认选项展示
+    syz_initTabs({
+      box: '#syz_tsBox',
+      btn: '.syz_tab-btn',
+      panel: '.syz_tab-panel',
+      activeClass: 'syz_active',
+      showClass: 'syz_show'
+    });
+  </script>
+</body>
+</html>
