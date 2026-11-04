@@ -47,23 +47,27 @@
       border: 1px solid #999;
     }
 
-    /* 选项卡按钮栏：灰色底条 */
+    /* 选项卡按钮栏：白底，底部蓝色粗线画在各按钮上，选中处断开 */
     .syz_tab-bar {
       display: flex;
-      background: #e7e7e7;
-      border-bottom: 1px solid #999;
+      background: #fff;
     }
 
     .syz_tab-btn {
       flex: 1;
-      padding: 9px 0;
-      font-size: 15px;
-      font-family: SimSun, "宋体", serif;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-family: SimHei, "黑体", "Microsoft YaHei", sans-serif;
+      font-weight: bold;
       border: none;
-      background: transparent;
-      color: #333;
+      border-right: 1px solid #ccc;
+      border-bottom: 3px solid #0044cc; /* 底部蓝色粗线 */
+      background: #fff;
+      color: #000;
       cursor: pointer;
-      border-right: 1px solid #d5d5d5;
     }
 
     .syz_tab-btn:last-child {
@@ -74,11 +78,12 @@
       color: #c00;
     }
 
-    /* 按钮选中状态：白底加粗，与内容区连成一体 */
+    /* 按钮选中状态：红色边框、红字、白底，底部为白色直接连通内容区（无蓝线） */
     .syz_tab-btn.syz_active {
+      border: 2px solid #c00;
+      border-bottom: 3px solid #fff;
       background: #fff;
-      color: #000;
-      font-weight: bold;
+      color: #c00;
     }
 
     /* 选项卡面板 */
