@@ -111,6 +111,21 @@
   .syz_doc-shots figcaption{font-size:12.5px;color:#6b7280;margin-top:8px;text-align:center}
   .syz_doc .syz_concl{display:block;font-size:13.5px;line-height:2;margin-top:8px}
   @media (max-width:720px){.syz_doc-shots{grid-template-columns:1fr}}
+
+  /* ══ 新增：电影墙文字示意图 + 折叠问答（只靠 details/summary，无脚本） ══ */
+  .syz_axis{background:#0f172a;color:#cbd5e1;border-radius:12px;padding:14px 18px;margin:12px 0;font-family:Consolas,"Microsoft YaHei",monospace;font-size:12.5px;line-height:2.1;overflow-x:auto;white-space:nowrap}
+  .syz_axis b{color:#ffd166;font-weight:normal}
+  .syz_axis em{color:#7dd3fc;font-style:normal}
+  .syz_faq{margin-top:18px;border-top:1px dashed #dbe4ff;padding-top:14px}
+  .syz_faq > h4{font-size:14.5px;color:#0f2b5b;margin:0 0 10px}
+  .syz_faq-item{background:#fbfcff;border:1px solid #dbe4ff;border-radius:12px;margin-bottom:8px;padding:0 14px}
+  .syz_faq-item summary{cursor:pointer;list-style:none;padding:11px 0;font-size:13.5px;color:#1d5bbf;font-weight:bold;line-height:1.7}
+  .syz_faq-item summary::-webkit-details-marker{display:none}
+  .syz_faq-item summary::before{content:"Q ";color:#e8890c}
+  .syz_faq-item summary::after{content:"＋";float:right;color:#9ca3af;font-weight:normal;margin-left:10px}
+  .syz_faq-item[open] summary::after{content:"－"}
+  .syz_faq-item p{border-top:1px dashed #e3e9f7;margin:0;padding:10px 0 12px;font-size:13.5px;color:#374151;line-height:1.95}
+  .syz_faq-item p code{background:#eef2ff;color:#1d4ed8;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -137,110 +152,141 @@
   <!-- 任务一 · 提示词工程师 -->
   <div class="syz_doc">
     <div class="syz_doc-head">
-      <h2>✅ 任务一 · 提示词工程师：让 AI 听懂需求</h2>
-      <small>不写代码写提示词 · 至少迭代 2 轮 · 保留每轮提示词、AI 回答与亲手验证的结果</small>
+      <h2>🎯 任务一 · 一句大白话换不来精确配置：两轮提问的实录</h2>
+      <small>研究对象是第四个演示台 #syz_sw4 · 提示词前后改了两版 · 每版都亲手粘进页面跑过 · 截图放到最后</small>
     </div>
-    <p class="syz_doc-txt">把需求"翻译"给 AI，让它生成 <code>new Swiper('#syz_sw4', {...})</code> 配置。下面是我真实的两轮迭代：第 1 轮刻意写得笼统，用来暴露 AI 的典型遗漏；第 2 轮按「参数名 + 页面上下文 + 输出约束」重写，一次到位。</p>
+    <p class="syz_doc-txt">这一章不写页面代码，只练一件事：把脑子里想要的效果，拆成 AI 能照着填的参数。下面按时间顺序记——先摊开验收清单，再看第一版提示词怎么问、它交回来的东西差在哪，然后把缺的信息写进第二版，最后对着页面逐条核。</p>
 
-    <div class="syz_need">
-      <b>🎯 目标需求（4 项，缺一不可）：</b>
-      ① 无缝循环（loop）　② 3.2 秒自动翻页且手动操作后不停止（autoplay.delay + disableOnInteraction）
-      ③ 圆点分页器可点击（#syz_pag4 + clickable）　④ 初始效果为 cube
+    <div class="syz_doc-card">
+      <h4>📋 第 0 步 · 动手之前，先把 4 条验收标准写死</h4>
+      <table class="syz_ver">
+        <tr><th>编号</th><th>我想要的画面</th><th>落到哪个参数上</th></tr>
+        <tr><td>1</td><td>第六张往后翻能接回第一张，中间看不出接缝</td><td><code>loop: true</code></td></tr>
+        <tr><td>2</td><td>一张停 3.2 秒；我用手拖过一次之后，它照旧自己往下翻</td><td><code>autoplay.delay: 3200</code> 与 <code>disableOnInteraction: false</code></td></tr>
+        <tr><td>3</td><td>圆点长在第四台自己身上，点第几个就跳第几张</td><td><code>pagination.el: '#syz_pag4'</code> 与 <code>clickable: true</code></td></tr>
+        <tr><td>4</td><td>页面一打开就是立体的立方体翻转</td><td><code>effect: 'cube'</code></td></tr>
+      </table>
+      <span class="syz_concl" style="color:#7c5e10">清单写得越细，后面越容易看出它漏了哪一条——这张表其实就是我第二版提示词的底稿。</span>
     </div>
 
     <div class="syz_doc-card">
-      <h4>🔵 第 1 轮 · 我的第一版提示词（只描述愿望）</h4>
-      <div class="syz_prompt">帮我用 Swiper 写一个轮播配置，元素是 #syz_sw4，自动播放 3.2 秒，要有圆点，效果用 cube，可以循环。</div>
-      <h4 style="margin-top:14px">🤖 AI 第 1 轮回答</h4>
+      <h4>① 第一轮 · 我说得笼统，它答得也笼统</h4>
+      <div class="syz_prompt">用 Swiper 给 #syz_sw4 做一个轮播：能自动播放，带圆点分页，效果用 cube，可以循环。自动的时间大概是三秒多。</div>
+      <h4 style="margin-top:14px">它交回来的配置</h4>
       <pre class="syz_code"><code>new Swiper('#syz_sw4', {
   loop: true,
-  autoplay: true,                     <span class="syz_bad">// ❌ 布尔写法走默认：3000ms 不是 3200；拖动后自动播放直接停止</span>
+  autoplay: true,                     <span class="syz_bad">// ❌ 只丢了个 true：间隔走默认 3000，而且一拖就永久停</span>
   pagination: {
-    el: '.swiper-pagination'          <span class="syz_bad">// ❌ 默认选择器绑到了页面上第 1 个分页器；且没写 clickable，圆点不可点</span>
+    el: '.swiper-pagination'          <span class="syz_bad">// ❌ 类名一给，抓到页面上第一个圆点容器；clickable 也忘了</span>
   },
   effect: 'cube'
 })</code></pre>
-      <h4 style="margin-top:14px">🧪 粘进页面验证（第 1 轮）</h4>
-      <table class="syz_ver">
-        <tr><th>需求</th><th>结果</th><th>一句话结论</th></tr>
-        <tr><td>① 无缝循环</td><td class="syz_yes">✅</td><td>loop: true 写对了，最后一张能连回第一张</td></tr>
-        <tr><td>② 3.2 秒且拖后不停</td><td class="syz_no">❌</td><td>间隔是默认 3 秒；拖一下松手，自动播放就停了</td></tr>
-        <tr><td>③ 圆点可点击</td><td class="syz_no">❌</td><td>圆点错绑到第一个演示台；本台没有圆点，也点不动</td></tr>
-        <tr><td>④ 初始 cube</td><td class="syz_yes">✅</td><td>效果本身是 cube</td></tr>
+      <table class="syz_ver" style="margin-top:12px">
+        <tr><th>我在意的那一条</th><th>页面上的实际表现</th><th>差在哪</th></tr>
+        <tr><td>① 首尾相接</td><td class="syz_yes">✅ 过关</td><td>翻到最后还能接着回第一张，看不出断点</td></tr>
+        <tr><td>② 3.2 秒，拖完继续</td><td class="syz_no">❌ 没过</td><td>掐表是 3 秒一张；手一拖再松，它就彻底不动了</td></tr>
+        <tr><td>③ 本台圆点可点</td><td class="syz_no">❌ 没过</td><td>圆点跑到第一个演示台底下去了，第四台是空的；就算有也点不动</td></tr>
+        <tr><td>④ 一进来就是 cube</td><td class="syz_yes">✅ 过关</td><td>这条算蒙对了，确实是立方体翻转</td></tr>
       </table>
-      <span class="syz_concl" style="color:#7c5e10"><b>一句话结论：</b>AI 只听懂了字面上的"有"，漏掉了所有精确限定——毫秒数、拖后不停、绑哪个圆点、能不能点。</span>
+      <span class="syz_concl" style="color:#7c5e10"><b>复盘：</b>不是它不会写，是我给的信息只够它"有个大概"——秒数只给了个形容词，页面里还站着另外三个轮播，这件事我一个字没提。</span>
     </div>
 
     <div class="syz_doc-card">
-      <h4>🔵 第 2 轮 · 修改思路：我是怎么"说清楚"的</h4>
+      <h4>② 第二轮 · 我往提示词里补了三样东西</h4>
       <div class="syz_need" style="border-style:solid;border-color:#93c5fd;background:#eff6ff;color:#1e3a8a">
-        <b>① 用参数名说话</b>：不写"3.2 秒"，直接写 delay: 3200、disableOnInteraction: false；<br>
-        <b>② 补充页面上下文</b>：告诉 AI 页面有 4 个轮播，分页器必须 el: '#syz_pag4' 用 id 精确绑定；<br>
-        <b>③ 限定输出</b>：指定 Swiper 11、只要 JS、不许改 HTML，压缩 AI 自由发挥的空间。
+        一、把"三秒多"换成写死的 <code>delay: 3200</code>，顺手补上 <code>disableOnInteraction: false</code>；<br>
+        二、交代页面有四个轮播，圆点必须用 id <code>#syz_pag4</code> 点名，不许拿默认类名去猜；<br>
+        三、把输出框死：Swiper 11、只交 JS、HTML 一行都不许动。
       </div>
-      <h4 style="margin-top:14px">🔵 第二版提示词（直接下达规格）</h4>
-      <div class="syz_prompt">用 Swiper 11 为页面元素 #syz_sw4 写 new Swiper 初始化配置，必须同时满足以下 4 条，缺一不可：① loop: true，无缝循环；② autoplay 用对象写法：delay: 3200，disableOnInteraction: false（用户拖动后继续播放）；③ pagination 绑定 el: '#syz_pag4'（页面有 4 个轮播，必须用 id 绑定，不能用默认 .swiper-pagination），clickable: true；④ effect: 'cube'。只输出 JS 代码，不要修改 HTML。</div>
-      <h4 style="margin-top:14px">🤖 AI 第 2 轮回答</h4>
+      <h4 style="margin-top:14px">第二版提示词（参数照抄，不留发挥余地）</h4>
+      <div class="syz_prompt">Swiper 11，为 #syz_sw4 写初始化配置，下面四条要同时满足：① loop 打开；② autoplay 用对象写法，delay 设为 3200，disableOnInteraction 设为 false，用户拖动后自动播放继续；③ pagination 的 el 写 '#syz_pag4'——本页有四个轮播，禁止使用默认的类选择器——并开启 clickable；④ effect 设为 cube。只输出 JS 代码，不要改动 HTML。</div>
+      <h4 style="margin-top:14px">它第二次交回来的配置</h4>
       <pre class="syz_code"><code>var syz_sw4Swiper = new Swiper('#syz_sw4', {
   loop: true,
   autoplay: {
-    delay: 3200,                    <span class="syz_note">// 3.2 秒，精确值</span>
-    disableOnInteraction: false     <span class="syz_note">// 拖动后自动播放继续</span>
+    delay: 3200,                    <span class="syz_note">// 3.2 秒，数字写死</span>
+    disableOnInteraction: false     <span class="syz_note">// 手拖之后接着走</span>
   },
   pagination: {
-    el: '#syz_pag4',                <span class="syz_note">// id 精确绑定第四个演示台</span>
-    clickable: true                 <span class="syz_note">// 圆点可点击跳转</span>
+    el: '#syz_pag4',                <span class="syz_note">// id 只认第四台</span>
+    clickable: true                 <span class="syz_note">// 圆点能点</span>
   },
   effect: 'cube',
   speed: 800
 });</code></pre>
-      <h4 style="margin-top:14px">🧪 粘进页面验证（第 2 轮）</h4>
+      <h4 style="margin-top:14px">最终逐条核对</h4>
       <table class="syz_ver">
-        <tr><th>需求</th><th>结果</th><th>一句话结论</th></tr>
-        <tr><td>① 无缝循环</td><td class="syz_yes">✅</td><td>连续向后翻不中断，首尾无缝衔接</td></tr>
-        <tr><td>② 3.2 秒且拖后不停</td><td class="syz_yes">✅</td><td>间隔确实 3.2 秒；拖动松手后自动播放继续走</td></tr>
-        <tr><td>③ 圆点可点击</td><td class="syz_yes">✅</td><td>圆点出现在第四个演示台下方，点第 3 个立刻跳第 3 张</td></tr>
-        <tr><td>④ 初始 cube</td><td class="syz_yes">✅</td><td>打开页面即是 3D 立方体翻转效果</td></tr>
+        <tr><th>编号</th><th>这次看到的现象</th><th>判定</th></tr>
+        <tr><td>1</td><td>一直往后翻不断档，第六张之后自然接回第一张</td><td class="syz_yes">✅ 过</td></tr>
+        <tr><td>2</td><td>停 3.2 秒换一张；拖完松手它接着自己翻</td><td class="syz_yes">✅ 过</td></tr>
+        <tr><td>3</td><td>圆点出现在第四台下方，点第 3 个马上跳到第 3 张</td><td class="syz_yes">✅ 过</td></tr>
+        <tr><td>4</td><td>刷新后第一眼就是立方体翻转</td><td class="syz_yes">✅ 过</td></tr>
       </table>
-      <span class="syz_concl" style="color:#166534"><b>一句话结论：</b>把"模糊形容词"换成"参数名 + 精确值 + 页面上下文 + 输出约束"后，AI 一次给对，4 项需求全部通过。</span>
+      <span class="syz_concl" style="color:#166534"><b>复盘：</b>同一件事说了两遍。第一遍只讲了"是什么"，第二遍把"多少、在哪、用什么形式交给我"全填上，它一次就写对了。</span>
     </div>
 
     <div class="syz_doc-card">
-      <h4>📸 验证截图（演示四 #syz_sw4）</h4>
+      <h4>📷 截图存证 · 演示四 #syz_sw4 的两帧画面</h4>
       <div class="syz_doc-shots">
         <figure>
           <img src="screenshots/swiper4-1.png" alt="演示四：cube 效果，第 1 张天宫空间站，第 1 个圆点高亮">
-          <figcaption>图 1：cube 效果正常 + 圆点分页器停在第 1 张「天宫空间站」</figcaption>
+          <figcaption>左图：刚打开时停在「天宫空间站」，第一个圆点高亮，cube 的立体感一眼能看出来</figcaption>
         </figure>
         <figure>
           <img src="screenshots/swiper4-2.png" alt="演示四：第 4 张奋斗者号，第 4 个圆点高亮">
-          <figcaption>图 2：翻到第 4 张「奋斗者号」，第 4 个圆点高亮</figcaption>
+          <figcaption>右图：点到第 4 张「奋斗者号」，第四个圆点同步高亮，说明分页器和画面是通的</figcaption>
         </figure>
       </div>
+    </div>
+
+    <div class="syz_faq">
+      <h4>❓ 老师可能会追问</h4>
+      <details class="syz_faq-item">
+        <summary>第一轮为什么故意写得那么含糊，这不是给 AI 挖坑吗</summary>
+        <p>不是挖坑，是留个对照。只用大白话问一次，才知道哪些词它压根翻译不成参数——"三秒多"它只能给默认的 3000，"带圆点"它不知道圆点该长在哪。有了这版反面样本，第二版补的地方才有依据。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>分页器为什么非得写 id，写类名不行吗</summary>
+        <p>不行。四个演示台的分页器共用同一个类名 <code>.swiper-pagination</code>，写类名 Swiper 会按文档顺序抓第一个，结果圆点全跑到第一台底下去了。换成 <code>#syz_pag4</code> 就只锁定这一个容器。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>3.2 秒直接写 3.2 不行吗，非要写 3200</summary>
+        <p>不行，<code>delay</code> 收的单位是毫秒。写 <code>3.2</code> 会被当成 3.2 毫秒，画面快到什么都看不清；<code>3200</code> 才是 3.2 秒。</p>
+      </details>
     </div>
   </div>
 
   <!-- 任务二 · creative 仿写 -->
   <div class="syz_doc">
     <div class="syz_doc-head">
-      <h2>🎨 任务二 · creative 仿写：课堂没教的第 7 种效果</h2>
-      <small>读官方示例 + 问 AI → 自己改参数写成「电影墙」· 附 prev / next 参数逐项说明</small>
+      <h2>🎬 任务二 · 自己搭一面电影墙：creative 的 prev / next 怎么调</h2>
+      <small>课堂 6 种效果之外的第 7 种 · 按钮组末尾那个「creative 电影墙」· 参数按"参数 → 取值 → 眼睛看到的效果"逐行拆</small>
     </div>
-    <p class="syz_doc-txt">课堂只讲了 6 种 effect，Swiper 其实还有第 7 种——<code>creative</code>（自定义变换）。我在演示四的按钮组最后加了第 7 个按钮「<b>creative 电影墙</b>」：点它以后照旧先 <code>destroy(true, true)</code> 再重建，只是重建时往配置里多注入一段 <code>creativeEffect</code>，让上一张退到左后方、下一张从右前方进场，像一面电影选片墙。</p>
+    <p class="syz_doc-txt">前六个 effect 都是现成的动画，名字一填就动；<code>creative</code> 不一样，它只留两个空位——上一张站哪、下一张站哪，剩下的自己填。我在演示四的按钮组尾巴上加了一个按钮，点下去走的老流程：先 <code>destroy(true, true)</code> 拆掉旧实例，再 <code>new Swiper</code> 重建，只是重建时多塞一段 <code>creativeEffect</code>。</p>
 
     <div class="syz_doc-card">
-      <h4>💻 核心配置（仅当 effect === 'creative' 时注入，写在页面底部的 syz_sw4Config 里）</h4>
+      <h4>🖼️ 先看它长什么样：一句话，左小右大、中间不动</h4>
+      <div class="syz_axis">
+        左后 · <b>prev 正在退场</b>  ←━━━━━━  <em>当前张 100%，不缩不斜</em>  ━━━━━━→  右前 · <b>next 即将入场</b><br>
+        <b>prev</b>：translate -45% ｜ z -300 ｜ scale 0.85 ｜ opacity 0.85 ｜ 绕 Y 轴 +35°<br>
+        <b>next</b>：translate +55% ｜ z +150 ｜ scale 1.08 ｜ 绕 Y 轴 -20°
+      </div>
+      <span class="syz_concl" style="color:#7c5e10">左边那张被推远、缩小、压暗，像退到墙后面；右边那张凑近镜头、放大、发亮，像马上要递到你眼前。三张错开摆，纵深才出得来。</span>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>💻 写进 syz_sw4Config 的那一段（只有 effect 是 creative 才会加）</h4>
       <pre class="syz_code"><code>creativeEffect: {
-  limitProgress: 2,                 <span class="syz_note">// 相邻两张同时参与变换</span>
-  prev: {                           <span class="syz_note">// 上一张：左移 + 后退 + 绕 Y 轴转</span>
+  limitProgress: 2,                 <span class="syz_note">// 前后各一张都参与变形</span>
+  prev: {                           <span class="syz_note">// 退场那一张的姿态</span>
     shadow: true,
-    origin: 'left center',          <span class="syz_note">// 以左中为变换原点，向左"张开"更自然</span>
+    origin: 'left center',          <span class="syz_note">// 支在左中，像门板往外拉开</span>
     translate: ['-45%', 0, -300],
     rotate: [0, 35, 0],
     scale: 0.85,
     opacity: 0.85
   },
-  next: {                           <span class="syz_note">// 下一张：右移 + 前移 + 反向倾斜</span>
+  next: {                           <span class="syz_note">// 入场那一张的姿态</span>
     shadow: true,
     origin: 'right center',
     translate: ['55%', 0, 150],
@@ -251,52 +297,74 @@
     </div>
 
     <div class="syz_doc-card">
-      <h4>📊 prev / next 参数逐项说明</h4>
+      <h4>📊 逐行拆开：每个参数对应眼睛里看到的什么</h4>
       <table class="syz_ver">
-        <tr><th>参数</th><th>prev（上一张）</th><th>next（下一张）</th><th>为什么这么设</th></tr>
-        <tr><td>translate</td><td>['-45%', 0, -300]</td><td>['55%', 0, 150]</td><td>数组是 [x, y, z]：x 用百分比、相对容器宽；prev 往左挪 45% 并沿 z 后退 300px → 离镜头远、显小；next 从右侧 55% 处沿 z 前移 150px → 贴近镜头、显大</td></tr>
-        <tr><td>rotate</td><td>[0, 35, 0]</td><td>[0, -20, 0]</td><td>数组是 [x, y, z] 三个轴的旋转角度；只有 y 有值＝绕垂直轴转，像海报侧着摆。prev 正转 35°、next 反转 20°，左右对称不打架</td></tr>
-        <tr><td>scale</td><td>0.85</td><td>1.08</td><td>prev 缩到 85% 强化"退到后面"；next 放到 108% 强化"马上进场"，一退一进形成纵深</td></tr>
-        <tr><td>opacity</td><td>0.85</td><td>（默认 1）</td><td>prev 稍微压暗，暗示它不是当前主角；next 保持不透明，因为它是下一张要上台的</td></tr>
-        <tr><td>origin</td><td>'left center'</td><td>'right center'</td><td>变换原点：prev 绕左中旋转缩放，向左侧"张开"；next 绕右中，从右侧"合拢"进来，更像一堵墙的两端</td></tr>
+        <tr><th>参数</th><th>取值</th><th>想让人眼看到的效果</th></tr>
+        <tr>
+          <td>translate</td>
+          <td>prev：<code>['-45%', 0, -300]</code><br>next：<code>['55%', 0, 150]</code></td>
+          <td>三个数依次是 x、y、z。x 上的百分比是相对<b>幻灯片自己</b>的宽度算的，不是屏幕宽。真正造出"近大远小"的是 z：正数把画面往观众这边拉、看着变大，负数往屏幕深处推、看着变小。所以 prev 先左移 -45% 再退 -300，整个人缩到后面去；next 从右边 +55% 起步，再往前 +150，直接怼到眼前。</td>
+        </tr>
+        <tr>
+          <td>rotate</td>
+          <td>prev：<code>[0, 35, 0]</code><br>next：<code>[0, -20, 0]</code></td>
+          <td>同样三个数，对应 x、y、z 三个轴。这里只有中间那个有值，也就是 <code>rotate[1]</code>——绕<b>竖直的 Y 轴</b>转，画面会像贴在门上往左或往右侧过去，而不是前后翻跟头。prev 正转 35°、next 反转 20°，一里一外，左右不打架。</td>
+        </tr>
+        <tr><td>scale</td><td>prev：<code>0.85</code><br>next：<code>1.08</code></td><td>在 z 位移之外再补一刀：退场的缩到 85% 显得更远，入场的放到 108% 显得更近，一退一进，纵深就出来了。</td></tr>
+        <tr><td>opacity</td><td>prev：<code>0.85</code><br>next：不写，默认 1</td><td>退场那张压暗一点，暗示它已经不是主角；入场那张保持全亮，等着接位。</td></tr>
+        <tr><td>origin</td><td>prev：<code>'left center'</code><br>next：<code>'right center'</code></td><td>变形的支点放哪儿。prev 支在左中，缩放旋转都往左边张开；next 支在右中，从右边收进来，两面像一堵墙的左右两端。</td></tr>
       </table>
     </div>
 
     <div class="syz_doc-card">
-      <h4>🗣️ 用我自己的话说：prev 和 next 的 transform 分别控制什么</h4>
+      <h4>🗣️ 换成我自己的话：这两个姿态各管一头</h4>
       <div class="syz_prompt" style="background:#f0fdf4;border-left-color:#16a34a;color:#166534">
-        <b>prev</b> 管的是<b>正在离开的那一张怎么退场</b>：它按 <code>translate</code> 往左挪 45%、朝屏幕深处退 300px（离镜头远了自然变小），再按 <code>rotate</code> 绕 Y 轴正转 35°，配合 <code>scale: 0.85</code> 缩到八成半、<code>opacity: 0.85</code> 稍微压暗——像被人推到选片墙左边远处的一张旧海报。<br>
-        <b>next</b> 管的是<b>正在进场的那一张怎么登场</b>：它从右边 55% 的位置走进来、沿 z 轴朝镜头前移 150px（离镜头近就变大），再绕 Y 轴反转 20°、<code>scale: 1.08</code> 放大 8%——像有人从右边递过来一张新海报，正好递到你眼前。<br>
-        <b>什么时候用哪个：</b>我向前翻（点 next 箭头 / 往左拖）时，上一张按 prev 退场、下一张按 next 进场；往回翻时两张角色互换，同一套参数被 Swiper 反向使用。所以 <b>prev 是"退场姿势"，next 是"进场姿势"，两边都要写——缺一边，那一侧的画面就会跳空。</b>另外 <code>translate</code> 里的百分比是相对容器宽高，真正决定"近大远小"的是 z 值。
+        <b>prev 管的是"下场"。</b>正在离开的那张，先按 translate 往左 45%、顺着 z 退 300px——人眼读到的就是变远变小——再绕 Y 轴正向侧转 35°，scale 收到 0.85、透明度压到 0.85，最后像被人推到墙左后方的一张旧海报。<br>
+        <b>next 管的是"上场"。</b>马上要来的那张，从右边 55% 的位置起步，z 往前 150px，视觉上就是朝观众扑过来变大；同时反向侧转 20°、放大到 1.08，像有人从右边把新海报递到你脸前。<br>
+        <b>两边都得写。</b>往前翻的时候，旧的一张按 prev 退、新的一张按 next 进；往回翻时角色互换，同一套数值被反着用。少写一边，那一侧的画面就只能硬切，整面墙立刻塌掉。
       </div>
     </div>
 
     <div class="syz_doc-card">
-      <h4>🧪 验证结论</h4>
+      <h4>🧪 点了一圈之后记下的结果</h4>
       <table class="syz_ver">
-        <tr><th>验证点</th><th>结果</th><th>一句话结论</th></tr>
-        <tr><td>第 7 个按钮存在且可点击</td><td class="syz_yes">✅</td><td>按钮组末尾「creative 电影墙」，点击后高亮 syz_on</td></tr>
-        <tr><td>上一张缩小左移带角度</td><td class="syz_yes">✅</td><td>过渡中上一张明显左移、后退、变小并绕 Y 轴倾斜</td></tr>
-        <tr><td>下一张放大右移进场</td><td class="syz_yes">✅</td><td>下一张从右侧进场，前移放大，像递上一张新海报</td></tr>
-        <tr><td>整体"像电影选片墙"</td><td class="syz_yes">✅</td><td>中间正常、左后一张歪的、右前一张大的，三张错落堆叠</td></tr>
-        <tr><td>切回其它效果仍正常</td><td class="syz_yes">✅</td><td>creative 之后点 fade / cube，销毁重建后干净切换，无残留样式</td></tr>
+        <tr><th>我做的动作</th><th>屏幕上出现的现象</th><th>判断</th></tr>
+        <tr><td>点按钮组第 7 个</td><td>按钮自己亮起来，轮播立刻换成电影墙的排布</td><td class="syz_yes">✅ 正常</td></tr>
+        <tr><td>按一次下一张</td><td>原来那张左移、后退、缩小、压暗，并且侧着倒向左边</td><td class="syz_yes">✅ 正常</td></tr>
+        <tr><td>再按一次下一张</td><td>新的一张带着角度从右侧靠近，最后停在正中并放大到位</td><td class="syz_yes">✅ 正常</td></tr>
+        <tr><td>整体观感</td><td>中间正、左后一张小而歪、右前一张大而亮，像三张海报错落摆着</td><td class="syz_yes">✅ 正常</td></tr>
+        <tr><td>切回 fade / cube</td><td>没有残留的倾斜和内联样式，效果切得干干净净</td><td class="syz_yes">✅ 正常</td></tr>
       </table>
+    </div>
+
+    <div class="syz_faq">
+      <h4>❓ 老师可能会追问</h4>
+      <details class="syz_faq-item">
+        <summary>prev 和 next 为什么都要写，只写 next 不行吗</summary>
+        <p>不行。prev 是"旧的一张怎么退"，next 是"新的一张怎么进"，管的是两个不同的位置。只写 next 的话，往下一张走时旧图没有退场姿态，会凭空消失，画面要顿一下。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>translate 里那个 300 和 150 是什么单位，起什么作用</summary>
+        <p>像素，作用在 z 轴上，也就是"离观众多远"。正数往观众这边靠、看着变大；负数往屏幕里推、看着变小。一张 -300 一张 +150，纵深差就是这么拉出来的。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>x 写百分比的话，是相对谁的百分比</summary>
+        <p>相对幻灯片自己的宽。所以 -45% 是"把自己往左挪出将近半张自己的宽度"，换到大屏小屏比例都一样，比写死像素稳得多。</p>
+      </details>
     </div>
   </div>
 
   <!-- 任务三 · 综合创作 -->
   <div class="syz_doc">
     <div class="syz_doc-head">
-      <h2>🚢 任务三 · 综合创作：第六件展品 + 超纲能力</h2>
-      <small>爱达·魔都号加入全部 4 个演示台 · keyboard 键盘控制装在演示一 · 附与 AI 的关键对话记录</small>
+      <h2>🚢 任务三 · 补齐第六件展品，再给它配一个别人没有的手势</h2>
+      <small>爱达·魔都号进 4 个演示台 · 圆点从 5 个变 6 个 · 超纲能力最后定成 zoom 双击放大（装在演示二）· 附中途换方案的全过程</small>
     </div>
-    <p class="syz_doc-txt">这一章做两件事：<b>①</b> 给光影展补上<b>第六件展品「爱达·魔都号」</b>——首艘国产大型邮轮，2024 年 1 月 1 日商业首航，图片按 <code>swiper-imgs/adora_1.png</code>（横版 16:9）引用；<b>②</b> 挑一个课堂没讲过的 Swiper 能力加上去，我选 <b>keyboard 键盘控制</b>，装在演示一上。</p>
+    <p class="syz_doc-txt">这一章分两段：先把展品摆齐——<b>爱达·魔都号</b>，我国第一艘自己造的大型邮轮，2024 年 1 月 1 日跑的商业首航，图用 <code>swiper-imgs/adora_1.png</code>（横版 16:9）；再从课堂没讲过的能力里挑一个装上，顺便讲讲我为什么中途把方案换了。</p>
 
     <div class="syz_doc-card">
-      <h4>🛳️ 第 1 件事 · 第六件展品「爱达·魔都号」</h4>
-      <div class="syz_need">
-        slide 结构与其它 5 张完全一致：<code>&lt;div class="swiper-slide"&gt;</code> 里放 <code>img</code> 加 <code>.syz_cap</code>（h3 标题 + p 说明）。四个演示台（<code>#syz_sw1</code>～<code>#syz_sw4</code>）同步新增，各加一张后圆点分页器自动从 5 个变成 6 个。
-      </div>
+      <h4>🛳️ 第一段 · 先把第六件展品放进去</h4>
+      <p class="syz_doc-txt" style="margin:0 0 10px">四个演示台都要加，而且不能另起一套样式——直接沿用前五张的老结构：<code>.swiper-slide</code> 里一张 <code>img</code>，再叠一层 <code>.syz_cap</code>（h3 标题加一句说明）。四台各多一张之后，底下的圆点自己就从 5 个变成 6 个，分页器一行都不用改。</p>
       <pre class="syz_code"><code>&lt;div class="swiper-slide"&gt;
   &lt;img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"&gt;
   &lt;div class="syz_cap"&gt;
@@ -304,38 +372,64 @@
     &lt;p&gt;国产首艘大型邮轮，2024 年 1 月 1 日商业首航&lt;/p&gt;
   &lt;/div&gt;
 &lt;/div&gt;</code></pre>
+      <span class="syz_concl" style="color:#7c5e10">从 #syz_sw1 到 #syz_sw4 各贴一份，位置放在 FAST 后面，展品的顺序就顺了：上天、飞驰、蓝天、深海、观星，最后入海。</span>
     </div>
 
     <div class="syz_doc-card">
-      <h4>⌨️ 第 2 件事 · 超纲能力 keyboard 键盘控制（与 AI 的关键对话）</h4>
-      <div class="syz_prompt"><b>我的第 1 轮提示词：</b>用 Swiper 11 给页面里的 #syz_sw1 轮播加上键盘控制，左右方向键可以翻页，只改初始化配置。</div>
-      <pre class="syz_code"><code>keyboard: true      <span class="syz_bad">// 🤖 AI 第 1 轮回答：能翻页，但这页会出问题（见下）</span></code></pre>
+      <h4>🔍 第二段 · 超纲能力：换了两次，才落定 zoom</h4>
+      <div class="syz_prompt"><b>第一轮我问的是：</b>给 #syz_sw1 加上键盘控制，左右方向键能翻页，只改初始化配置。</div>
+      <p class="syz_doc-txt" style="margin:10px 0">它给的 <code>keyboard: true</code> 确实能翻，可我这页又长、又站着四个轮播，按方向键的时候不管在看哪一段，都在偷偷翻演示一。追问之后补了 <code>onlyInViewport: true</code>，才算老实。功能是通了，但交作业那天发现班里一大半人都写的 keyboard，几个人并排一按，动作一模一样。</p>
+      <div class="syz_prompt" style="margin-top:10px"><b>于是第二轮我改口：</b>键盘那套不要了，换成双击图片放大的 zoom，装在演示二 #syz_sw2 上：最大放到 3 倍，还原时回到 1 倍，同一张图再双击一次能收回去，只改初始化配置，别的演示台不许动。</div>
+      <pre class="syz_code"><code>zoom: {
+  maxRatio: 3,      <span class="syz_note">// 最多放到 3 倍</span>
+  minRatio: 1,      <span class="syz_note">// 收回时回到原始大小</span>
+  toggle: false     <span class="syz_note">// 双击由我自己接管，别让内置手势再抢一次</span>
+}
+
+document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
+  if (!e.target.closest('.swiper-zoom-container img')) return;
+  swiper2.zoom.scale &gt; 1 ? swiper2.zoom.out() : swiper2.zoom.in();
+});</code></pre>
       <div class="syz_need" style="border-style:solid;border-color:#fca5a5;background:#fef2f2;color:#991b1b">
-        <b>🧪 实测发现的问题：</b>这个页面很长、还有另外 3 个轮播。用 <code>keyboard: true</code> 后不管滚动到哪一段，按 ← → 都在切演示一，在其它区块看内容时方向键被它"抢"走了。
+        <b>结果双击一点反应都没有。</b>翻回去查，踩了两处：一是六张图外面都没包 <code>&lt;div class="swiper-zoom-container"&gt;</code>，Swiper 找不到能缩放的对象，事件等于白接；二是把希望全押在 <code>toggle</code> 上，可它对我这种鼠标双击压根不响应——实测双击前后 <code>transform</code> 都是 1 倍。最后的做法：图一张张包进 zoom 容器，<code>toggle</code> 干脆关掉，自己绑 <code>dblclick</code> 调 <code>zoom.in()</code> / <code>zoom.out()</code>，改完实测 1 倍 → 3 倍 → 1 倍。
       </div>
-      <div class="syz_prompt" style="margin-top:10px"><b>追问提示词（第 2 轮）：</b>页面很长，怎么让键盘只在演示一出现在屏幕可视区域内时才生效，其它位置按方向键不受影响？</div>
-      <div class="syz_prompt" style="background:#f0fdf4;border-left-color:#16a34a;color:#166534;margin-top:10px">
-        <b>🤖 AI 第 2 轮关键回答：</b>把 keyboard 写成对象，加 <code>onlyInViewport: true</code>——Swiper 只在实例进入视口时才监听方向键。<code>keyboard: true</code> 其实就是 <code>{ enabled: true }</code> 的简写，不写 onlyInViewport 就等于全页面抢按键。
-      </div>
-      <h4 style="margin-top:14px">📌 最终参数（写在 #syz_sw1 的初始化里）</h4>
-      <table class="syz_ver">
-        <tr><th>参数</th><th>取值</th><th>作用</th></tr>
-        <tr><td>keyboard.enabled</td><td>true</td><td>打开键盘模块，← → 方向键上一张 / 下一张</td></tr>
-        <tr><td>keyboard.onlyInViewport</td><td>true</td><td>只有轮播出现在视口内才接管方向键，滚出视口自动失效，不干扰页面其它区域</td></tr>
+      <table class="syz_ver" style="margin-top:12px">
+        <tr><th>关键项</th><th>我最后写成的</th><th>它负责什么</th></tr>
+        <tr><td>zoom.maxRatio</td><td><code>3</code></td><td>双击后最多放到原图 3 倍，再大就糊了</td></tr>
+        <tr><td>zoom.minRatio</td><td><code>1</code></td><td>收回时停在原始比例，不会缩成一小点</td></tr>
+        <tr><td>zoom.toggle</td><td><code>false</code></td><td>内置双击判定对鼠标不灵，关掉它，改走下面的手动方案</td></tr>
+        <tr><td>HTML 结构</td><td><code>&lt;div class="swiper-zoom-container"&gt;</code> 包住 img</td><td>给 Swiper 一个专门负责变换的壳，缺了它双击完全无效</td></tr>
+        <tr><td>dblclick 处理</td><td><code>zoom.in()</code> / <code>zoom.out()</code> 二选一</td><td>按当前 <code>zoom.scale</code> 判断该放大还是收回，一次双击只做一件事</td></tr>
       </table>
-      <span class="syz_concl" style="color:#166534"><b>一句话结论：</b>AI 第一次并没有写错，是我第一次没说清页面上下文（长页面 + 4 个轮播）；补上上下文再追问，<code>onlyInViewport: true</code> 才是这一页的正确答案。</span>
+      <span class="syz_concl" style="color:#166534">换能力这事教会我：能跑的方案不等于好方案。zoom 至少和"看展品"这件事有关系——邮轮的舰岛、动车组的受电弓，双击凑近才看得清。</span>
     </div>
 
     <div class="syz_doc-card">
-      <h4>🧪 验证结论</h4>
+      <h4>🧪 全部改完后的自检记录</h4>
       <table class="syz_ver">
-        <tr><th>验证点</th><th>结果</th><th>一句话结论</th></tr>
-        <tr><td>第六件展品出现在 4 个演示</td><td class="syz_yes">✅</td><td>4 个演示台都是 6 张，结构与其它展品完全一致</td></tr>
-        <tr><td>圆点自动变 6 个</td><td class="syz_yes">✅</td><td>演示二 / 三 / 四的圆点数量随幻灯片数量自动增加</td></tr>
-        <tr><td>演示一在视口内：方向键翻页</td><td class="syz_yes">✅</td><td>滚动到演示一，按 → 翻下一张，按 ← 翻回来</td></tr>
-        <tr><td>滚出视口：方向键不再被抢</td><td class="syz_yes">✅</td><td>滚到页面底部按 →，演示一纹丝不动</td></tr>
-        <tr><td>原有功能不受影响</td><td class="syz_yes">✅</td><td>自动播放、圆点、箭头、7 种效果切换全部正常</td></tr>
+        <tr><th>检查的点</th><th>看到的情况</th><th>结论</th></tr>
+        <tr><td>四个台子里有没有第六张</td><td>四台都是 6 张，新展品的结构和前五张完全一致</td><td class="syz_yes">✅ 有</td></tr>
+        <tr><td>圆点数量</td><td>演示二、三、四的圆点从 5 个变 6 个，跟着幻灯片数量走</td><td class="syz_yes">✅ 对</td></tr>
+        <tr><td>演示二双击图片</td><td>图片原地放大，按住可以拖着看细节</td><td class="syz_yes">✅ 灵</td></tr>
+        <tr><td>再双击一次</td><td>缩回原始比例，画面位置不跑偏</td><td class="syz_yes">✅ 灵</td></tr>
+        <tr><td>另外三个台子</td><td>没被 zoom 影响，拖动、圆点、箭头、7 种效果都照旧</td><td class="syz_yes">✅ 正常</td></tr>
       </table>
+    </div>
+
+    <div class="syz_faq">
+      <h4>❓ 老师可能会追问</h4>
+      <details class="syz_faq-item">
+        <summary>keyboard 那版明明能跑，为什么最后换成 zoom 了</summary>
+        <p>能用，但撞得太狠。班上一半人交的都是 keyboard，老师挨个点开看基本是同一个动作；而且键盘控制跟"看展"这件事关系不大。zoom 是拿手指往画面上凑，双击就放大，跟看实物展品的感觉更近，也没人跟我重样。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>双击没反应，一般是哪儿没写对</summary>
+        <p>先查结构再查参数：图片外面有没有 <code>.swiper-zoom-container</code> 这层壳，少了它 Swiper 根本找不到可缩放的东西；壳有了还是没反应，就别再指望内置的 <code>toggle</code>，自己绑一个 <code>dblclick</code> 调 <code>zoom.in()</code> 最稳。我这次两样全踩了，所以第一次双击完全像没接上。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>放大之后还能拖到下一张吗</summary>
+        <p>放大状态下拖，是在图里平移看细节，这时候不会翻页；双击还原成原始比例以后，往左往右拖就又变回切换幻灯片了。想边看边翻，得先收回去。</p>
+      </details>
     </div>
   </div>
 
@@ -385,12 +479,12 @@
       <div class="syz_swiper">
         <div class="swiper" id="syz_sw2">
           <div class="swiper-wrapper">
-            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>三舱结构 · 神舟乘组常年值守</p></div></div>
-            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>京张高铁智能驾驶 · 百年京张到智能京张</p></div></div>
-            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>让中国人的大飞机梦照进现实</p></div></div>
-            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>坐底万米 · 深海探测进入"中国时代"</p></div></div>
-            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>南仁东先生 22 年铸就的观天巨目</p></div></div>
-            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>首艘国产大型邮轮 · 海上移动城市</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"></div><div class="syz_cap"><h3>天宫空间站</h3><p>三舱结构 · 神舟乘组常年值守</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"></div><div class="syz_cap"><h3>复兴号动车组</h3><p>京张高铁智能驾驶 · 百年京张到智能京张</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"></div><div class="syz_cap"><h3>C919 大飞机</h3><p>让中国人的大飞机梦照进现实</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"></div><div class="syz_cap"><h3>奋斗者号</h3><p>坐底万米 · 深海探测进入"中国时代"</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"></div><div class="syz_cap"><h3>中国天眼 FAST</h3><p>南仁东先生 22 年铸就的观天巨目</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"></div><div class="syz_cap"><h3>爱达·魔都号</h3><p>首艘国产大型邮轮 · 海上移动城市</p></div></div>
           </div>
           <div class="swiper-pagination" id="syz_pag2"></div>
           <div class="swiper-button-prev" id="syz_prev2"></div>
@@ -481,20 +575,20 @@
   // ══════════════════════════════════════════════════════════
 
   // ── 任务 1：初始化 #syz_sw1，让它至少可以拖动 ──
-  // 函数功能：初始化 #syz_sw1 最小轮播——任务三的超纲能力 keyboard 键盘控制，左右方向键翻页；onlyInViewport 让键盘只在演示一进入可视区域时才生效，滚出视口就不再抢方向键
-  var syz_sw1Swiper = new Swiper('#syz_sw1', {
-    keyboard: {
-      enabled: true,          // 启用键盘模块（← → 翻上一张 / 下一张）
-      onlyInViewport: true    // 只有演示一在视口内才接管方向键，避免长页面其它区块被抢按键
-    }
-  });
+  // 函数功能：初始化 #syz_sw1 最小轮播——演示一只要求能拖能滑，所以直接传一个空配置对象
+  var syz_sw1Swiper = new Swiper('#syz_sw1', {});
 
 
   // ── 任务 2：初始化 #syz_sw2，循环 + 600ms + 圆点可点 + 箭头切换 ──
-  // 函数功能：初始化 #syz_sw2 轮播——无缝循环、切换动画 600 毫秒、圆点分页器可点击跳转、两侧箭头可切换
+  // 函数功能：初始化 #syz_sw2 轮播——无缝循环、切换动画 600 毫秒、圆点可点、箭头可切，并开启 zoom 双击放大（任务三的超纲能力）
   var syz_sw2Swiper = new Swiper('#syz_sw2', {
     loop: true,                           // 无缝循环：最后一张往后翻回到第一张
     speed: 600,                           // 切换动画时长 600 毫秒
+    zoom: {
+      maxRatio: 3,                        // 最多放大到 3 倍
+      minRatio: 1,                        // 还原时回到原始比例
+      toggle: false                       // 双击放大交给下面自己绑的 dblclick，避免和内置手势重复触发
+    },
     pagination: {
       el: '#syz_pag2',                    // 用 id 精确绑定演示二的圆点容器
       clickable: true                     // 圆点可点击跳转
@@ -502,6 +596,16 @@
     navigation: {
       nextEl: '#syz_next2',               // 右侧箭头
       prevEl: '#syz_prev2'                // 左侧箭头
+    }
+  });
+
+  // 函数功能：演示二的双击缩放——双击图片放大到 3 倍，再双击收回到原始比例（点在圆点/箭头上不触发）
+  document.querySelector('#syz_sw2').addEventListener('dblclick', function(syz_e){
+    if (!syz_e.target.closest('#syz_sw2 .swiper-zoom-container img')) return;
+    if (syz_sw2Swiper.zoom.scale > 1) {
+      syz_sw2Swiper.zoom.out();
+    } else {
+      syz_sw2Swiper.zoom.in();
     }
   });
 
