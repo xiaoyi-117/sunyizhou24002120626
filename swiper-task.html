@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swiper 课堂操作任务 · 大国重器光影展 · 补全 JS</title>
+<!-- Swiper 官方组件库已通过 CDN 引入好，学生只需在底部 <script> 中写初始化代码 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f6f8fc;color:#1f2937}
+  .syz_wrap{max-width:1000px;margin:0 auto;padding:40px 20px 60px}
+
+  /* 头部 */
+  .syz_head{background:linear-gradient(135deg,#0f2b5b,#1d5bbf);border-radius:20px;padding:36px 38px;color:#fff;margin-bottom:14px;box-shadow:0 12px 30px rgba(15,43,91,.3)}
+  .syz_head .syz_badge{display:inline-block;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);font-size:13px;letter-spacing:2px;margin-bottom:14px}
+  .syz_head h1{font-size:30px;letter-spacing:1px;line-height:1.4}
+  .syz_head h1 b{color:#ffd166}
+  .syz_head p{margin-top:12px;font-size:14.5px;color:#d9e3f5;line-height:2}
+  .syz_goals{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .syz_goals i{font-style:normal;font-size:13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);padding:6px 14px;border-radius:8px}
+
+  /* 任务说明框 */
+  .syz_rule{background:#fffbea;border:1px solid #fde68a;border-radius:16px;padding:18px 22px;margin-bottom:30px;font-size:14px;color:#7c5e10;line-height:2}
+  .syz_rule b{color:#b45309}
+  .syz_rule code{background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:5px;font-family:Consolas,monospace;font-size:13px}
+
+  /* 章节 */
+  .syz_sec{background:#fff;border-radius:18px;padding:28px 30px;margin-bottom:26px;border:1px solid #e8ecf5;box-shadow:0 4px 14px rgba(31,41,55,.06);position:relative;overflow:hidden}
+  .syz_sec::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(#0f2b5b,#1d5bbf)}
+  .syz_sec-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .syz_sec-head .syz_no{flex:none;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0f2b5b,#1d5bbf);color:#fff;font-size:19px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+  .syz_sec-head h2{font-size:20px;color:#111827}
+  .syz_sec-head small{display:block;font-weight:normal;color:#9ca3af;font-size:13px;margin-top:3px}
+  .syz_sec p.syz_txt{font-size:14.5px;color:#374151;line-height:2;margin-bottom:10px}
+  .syz_sec p.syz_txt b{color:#0f2b5b}
+  .syz_sec code{background:#eef2ff;color:#1d4ed8;padding:1px 7px;border-radius:5px;font-family:Consolas,monospace;font-size:13px}
+
+  /* 任务要求卡 */
+  .syz_req{background:#f0fdf4;border:1.5px dashed #16a34a;border-radius:12px;padding:14px 18px;margin:14px 0 6px}
+  .syz_req h3{font-size:14.5px;color:#15803d;margin-bottom:6px}
+  .syz_req p{font-size:13.5px;color:#166534;line-height:2}
+  .syz_req code{background:#dcfce7;color:#15803d;padding:1px 7px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+  .syz_req .syz_star{color:#e8890c;font-size:13px;display:block;margin-top:6px}
+
+  /* 演示台 */
+  .syz_demo{margin:18px 0 6px}
+  .syz_demo .syz_demo-tag{display:inline-block;font-size:12.5px;color:#0f2b5b;background:#e8f0ff;border:1px solid #c7d8f8;border-radius:999px;padding:4px 14px;margin-bottom:12px}
+  .syz_swiper{width:100%;max-width:760px;margin:0 auto;border-radius:16px;overflow:visible!important}
+  .syz_swiper .swiper{height:290px;border-radius:16px;box-shadow:0 10px 26px rgba(15,43,91,.18)}
+  .syz_swiper .swiper-slide{position:relative;height:290px}
+  .syz_swiper .swiper-slide img{width:100%;height:100%;object-fit:cover;display:block}
+  .syz_swiper .syz_cap{
+    position:absolute;left:0;right:0;bottom:0;padding:34px 20px 14px;color:#fff;
+    background:linear-gradient(transparent,rgba(5,15,35,.82));
+  }
+  .syz_swiper .syz_cap h3{font-size:18px;letter-spacing:1px}
+  .syz_swiper .syz_cap p{font-size:13px;color:#dbe6f8;margin-top:4px}
+  /* 分页器配色 */
+  .syz_swiper .swiper-pagination-bullet{background:#0f2b5b;opacity:.35}
+  .syz_swiper .swiper-pagination-bullet-active{background:#e8890c;opacity:1;width:22px;border-radius:6px}
+  /* 导航按钮配色 */
+  .syz_swiper .swiper-button-next,.syz_swiper .swiper-button-prev{
+    width:42px;height:42px;border-radius:50%;background:rgba(15,43,91,.65);color:#fff;
+    --swiper-navigation-size:18px;transition:background .2s;
+  }
+  .syz_swiper .swiper-button-next:hover,.syz_swiper .swiper-button-prev:hover{background:#e8890c}
+
+  /* 效果切换按钮 */
+  .syz_fx{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 2px}
+  .syz_fx button{
+    border:1.5px solid #c7d8f8;background:#fff;color:#1d5bbf;font-size:13.5px;
+    padding:8px 18px;border-radius:999px;cursor:pointer;transition:all .2s;font-family:inherit;
+  }
+  .syz_fx button:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(29,91,191,.18)}
+  .syz_fx button.syz_on{background:linear-gradient(135deg,#0f2b5b,#1d5bbf);color:#fff;border-color:transparent}
+
+  .syz_back{text-align:center;margin-top:28px}
+  .syz_back a{display:inline-block;text-decoration:none;color:#0f2b5b;font-size:14.5px;font-weight:bold;background:#fff;border:1px solid #dbe4ff;border-radius:999px;padding:10px 26px;transition:transform .2s,box-shadow .2s}
+  .syz_back a:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,43,91,.15)}
+
+  footer{text-align:center;margin-top:34px;color:#9ca3af;font-size:13px;line-height:2}
+
+  /* ══ 三个综合任务 · 作业交付文档（任务一 / 二 / 三） ══ */
+  .syz_doc{background:#fff;border-radius:18px;padding:26px 28px;margin-bottom:26px;border:1px solid #e8ecf5;box-shadow:0 4px 14px rgba(31,41,55,.06)}
+  .syz_doc-head{margin-bottom:6px}
+  .syz_doc-head h2{font-size:19px;color:#111827;line-height:1.5}
+  .syz_doc-head small{display:block;font-weight:normal;color:#9ca3af;font-size:13px;margin-top:5px}
+  .syz_doc p.syz_doc-txt{font-size:14.5px;color:#374151;line-height:2;margin:10px 0}
+  .syz_doc p.syz_doc-txt b{color:#0f2b5b}
+  .syz_doc code{background:#eef2ff;color:#1d4ed8;padding:1px 7px;border-radius:5px;font-family:Consolas,monospace;font-size:13px}
+  .syz_doc-card{background:#fbfcff;border:1px solid #dbe4ff;border-radius:14px;padding:16px 20px;margin:14px 0}
+  .syz_doc-card h4{font-size:15px;color:#0f2b5b;margin:2px 0 10px}
+  .syz_need{background:#f0fdf4;border:1.5px dashed #16a34a;border-radius:12px;padding:12px 16px;font-size:13.5px;color:#166534;line-height:2}
+  .syz_need code{background:#dcfce7;color:#15803d}
+  .syz_prompt{background:#eff6ff;border-left:4px solid #1d5bbf;padding:10px 14px;border-radius:0 10px 10px 0;font-size:13.5px;color:#1e3a8a;line-height:1.9}
+  .syz_prompt code{background:#dbeafe;color:#1e40af}
+  .syz_code{display:block;background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:12px;font-family:Consolas,monospace;font-size:13px;line-height:1.8;overflow-x:auto;margin:10px 0;white-space:pre}
+  .syz_doc .syz_code code{background:none;color:inherit;padding:0;font-size:13px}
+  .syz_code .syz_bad{color:#f87171}
+  .syz_code .syz_note{color:#94a3b8}
+  .syz_ver{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+  .syz_ver th,.syz_ver td{border:1px solid #dbe4ff;padding:8px 10px;text-align:left;line-height:1.8}
+  .syz_ver th{background:#f0f5ff;color:#0f2b5b}
+  .syz_yes{color:#16a34a;font-weight:bold}
+  .syz_no{color:#dc2626;font-weight:bold}
+  .syz_doc-shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0 4px}
+  .syz_doc-shots figure{margin:0}
+  .syz_doc-shots img{width:100%;display:block;border-radius:10px;border:1px solid #dfe5f1}
+  .syz_doc-shots figcaption{font-size:12.5px;color:#6b7280;margin-top:8px;text-align:center}
+  .syz_doc .syz_concl{display:block;font-size:13.5px;line-height:2;margin-top:8px}
+  @media (max-width:720px){.syz_doc-shots{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="syz_wrap">
+
+  <div class="syz_head">
+    <span class="syz_badge">高 职 · 高 级 网 页 设 计 · 课 堂 操 作 任 务</span>
+    <h1>Swiper 轮播组件 · <b>大国重器光影展（学生版）</b></h1>
+    <p>HTML 骨架和 CSS 样式已经全部搭好，图片也备齐了——但这个页面的轮播<b>一个都不会动</b>！
+    因为所有 <b>&lt;script&gt; 里的 JS 初始化代码都被抽走了</b>。你的任务：把 4 个轮播全部"救活"。</p>
+    <div class="syz_goals"><i>任务 1 · 救活最小轮播</i><i>任务 2 · 装上圆点和箭头</i><i>任务 3 · 让它自己翻页</i><i>任务 4 · 六种效果随心换</i></div>
+  </div>
+
+  <div class="syz_rule">
+    <b>📋 任务说明（先读再动手）：</b><br>
+    ① Swiper 组件库已通过 CDN 引入（页面第 8、9 行），<b>不需要</b>再写引入代码；<br>
+    ② 每个"演示台"下面的绿色卡片就是该任务的要求，JS 代码统一写在页面最底部的 <code>&lt;script&gt;</code> 区域内；<br>
+    ③ 每完成一个任务就<b>刷新页面验证</b>：能拖、能点、会自己翻，才算通过；<br>
+    ④ 控制台（F12）报错是你要最好的朋友——先读报错，再改代码。
+  </div>
+
+  <!-- ══════════ 三个综合任务 · 作业交付文档 ══════════ -->
+
+  <!-- 任务一 · 提示词工程师 -->
+  <div class="syz_doc">
+    <div class="syz_doc-head">
+      <h2>✅ 任务一 · 提示词工程师：让 AI 听懂需求</h2>
+      <small>不写代码写提示词 · 至少迭代 2 轮 · 保留每轮提示词、AI 回答与亲手验证的结果</small>
+    </div>
+    <p class="syz_doc-txt">把需求"翻译"给 AI，让它生成 <code>new Swiper('#syz_sw4', {...})</code> 配置。下面是我真实的两轮迭代：第 1 轮刻意写得笼统，用来暴露 AI 的典型遗漏；第 2 轮按「参数名 + 页面上下文 + 输出约束」重写，一次到位。</p>
+
+    <div class="syz_need">
+      <b>🎯 目标需求（4 项，缺一不可）：</b>
+      ① 无缝循环（loop）　② 3.2 秒自动翻页且手动操作后不停止（autoplay.delay + disableOnInteraction）
+      ③ 圆点分页器可点击（#syz_pag4 + clickable）　④ 初始效果为 cube
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>🔵 第 1 轮 · 我的第一版提示词（只描述愿望）</h4>
+      <div class="syz_prompt">帮我用 Swiper 写一个轮播配置，元素是 #syz_sw4，自动播放 3.2 秒，要有圆点，效果用 cube，可以循环。</div>
+      <h4 style="margin-top:14px">🤖 AI 第 1 轮回答</h4>
+      <pre class="syz_code"><code>new Swiper('#syz_sw4', {
+  loop: true,
+  autoplay: true,                     <span class="syz_bad">// ❌ 布尔写法走默认：3000ms 不是 3200；拖动后自动播放直接停止</span>
+  pagination: {
+    el: '.swiper-pagination'          <span class="syz_bad">// ❌ 默认选择器绑到了页面上第 1 个分页器；且没写 clickable，圆点不可点</span>
+  },
+  effect: 'cube'
+})</code></pre>
+      <h4 style="margin-top:14px">🧪 粘进页面验证（第 1 轮）</h4>
+      <table class="syz_ver">
+        <tr><th>需求</th><th>结果</th><th>一句话结论</th></tr>
+        <tr><td>① 无缝循环</td><td class="syz_yes">✅</td><td>loop: true 写对了，最后一张能连回第一张</td></tr>
+        <tr><td>② 3.2 秒且拖后不停</td><td class="syz_no">❌</td><td>间隔是默认 3 秒；拖一下松手，自动播放就停了</td></tr>
+        <tr><td>③ 圆点可点击</td><td class="syz_no">❌</td><td>圆点错绑到第一个演示台；本台没有圆点，也点不动</td></tr>
+        <tr><td>④ 初始 cube</td><td class="syz_yes">✅</td><td>效果本身是 cube</td></tr>
+      </table>
+      <span class="syz_concl" style="color:#7c5e10"><b>一句话结论：</b>AI 只听懂了字面上的"有"，漏掉了所有精确限定——毫秒数、拖后不停、绑哪个圆点、能不能点。</span>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>🔵 第 2 轮 · 修改思路：我是怎么"说清楚"的</h4>
+      <div class="syz_need" style="border-style:solid;border-color:#93c5fd;background:#eff6ff;color:#1e3a8a">
+        <b>① 用参数名说话</b>：不写"3.2 秒"，直接写 delay: 3200、disableOnInteraction: false；<br>
+        <b>② 补充页面上下文</b>：告诉 AI 页面有 4 个轮播，分页器必须 el: '#syz_pag4' 用 id 精确绑定；<br>
+        <b>③ 限定输出</b>：指定 Swiper 11、只要 JS、不许改 HTML，压缩 AI 自由发挥的空间。
+      </div>
+      <h4 style="margin-top:14px">🔵 第二版提示词（直接下达规格）</h4>
+      <div class="syz_prompt">用 Swiper 11 为页面元素 #syz_sw4 写 new Swiper 初始化配置，必须同时满足以下 4 条，缺一不可：① loop: true，无缝循环；② autoplay 用对象写法：delay: 3200，disableOnInteraction: false（用户拖动后继续播放）；③ pagination 绑定 el: '#syz_pag4'（页面有 4 个轮播，必须用 id 绑定，不能用默认 .swiper-pagination），clickable: true；④ effect: 'cube'。只输出 JS 代码，不要修改 HTML。</div>
+      <h4 style="margin-top:14px">🤖 AI 第 2 轮回答</h4>
+      <pre class="syz_code"><code>var syz_sw4Swiper = new Swiper('#syz_sw4', {
+  loop: true,
+  autoplay: {
+    delay: 3200,                    <span class="syz_note">// 3.2 秒，精确值</span>
+    disableOnInteraction: false     <span class="syz_note">// 拖动后自动播放继续</span>
+  },
+  pagination: {
+    el: '#syz_pag4',                <span class="syz_note">// id 精确绑定第四个演示台</span>
+    clickable: true                 <span class="syz_note">// 圆点可点击跳转</span>
+  },
+  effect: 'cube',
+  speed: 800
+});</code></pre>
+      <h4 style="margin-top:14px">🧪 粘进页面验证（第 2 轮）</h4>
+      <table class="syz_ver">
+        <tr><th>需求</th><th>结果</th><th>一句话结论</th></tr>
+        <tr><td>① 无缝循环</td><td class="syz_yes">✅</td><td>连续向后翻不中断，首尾无缝衔接</td></tr>
+        <tr><td>② 3.2 秒且拖后不停</td><td class="syz_yes">✅</td><td>间隔确实 3.2 秒；拖动松手后自动播放继续走</td></tr>
+        <tr><td>③ 圆点可点击</td><td class="syz_yes">✅</td><td>圆点出现在第四个演示台下方，点第 3 个立刻跳第 3 张</td></tr>
+        <tr><td>④ 初始 cube</td><td class="syz_yes">✅</td><td>打开页面即是 3D 立方体翻转效果</td></tr>
+      </table>
+      <span class="syz_concl" style="color:#166534"><b>一句话结论：</b>把"模糊形容词"换成"参数名 + 精确值 + 页面上下文 + 输出约束"后，AI 一次给对，4 项需求全部通过。</span>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>📸 验证截图（演示四 #syz_sw4）</h4>
+      <div class="syz_doc-shots">
+        <figure>
+          <img src="screenshots/swiper4-1.png" alt="演示四：cube 效果，第 1 张天宫空间站，第 1 个圆点高亮">
+          <figcaption>图 1：cube 效果正常 + 圆点分页器停在第 1 张「天宫空间站」</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/swiper4-2.png" alt="演示四：第 4 张奋斗者号，第 4 个圆点高亮">
+          <figcaption>图 2：翻到第 4 张「奋斗者号」，第 4 个圆点高亮</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- 任务二 · creative 仿写 -->
+  <div class="syz_doc">
+    <div class="syz_doc-head">
+      <h2>🎨 任务二 · creative 仿写：课堂没教的第 7 种效果</h2>
+      <small>读官方示例 + 问 AI → 自己改参数写成「电影墙」· 附 prev / next 参数逐项说明</small>
+    </div>
+    <p class="syz_doc-txt">课堂只讲了 6 种 effect，Swiper 其实还有第 7 种——<code>creative</code>（自定义变换）。我在演示四的按钮组最后加了第 7 个按钮「<b>creative 电影墙</b>」：点它以后照旧先 <code>destroy(true, true)</code> 再重建，只是重建时往配置里多注入一段 <code>creativeEffect</code>，让上一张退到左后方、下一张从右前方进场，像一面电影选片墙。</p>
+
+    <div class="syz_doc-card">
+      <h4>💻 核心配置（仅当 effect === 'creative' 时注入，写在页面底部的 syz_sw4Config 里）</h4>
+      <pre class="syz_code"><code>creativeEffect: {
+  limitProgress: 2,                 <span class="syz_note">// 相邻两张同时参与变换</span>
+  prev: {                           <span class="syz_note">// 上一张：左移 + 后退 + 绕 Y 轴转</span>
+    shadow: true,
+    origin: 'left center',          <span class="syz_note">// 以左中为变换原点，向左"张开"更自然</span>
+    translate: ['-45%', 0, -300],
+    rotate: [0, 35, 0],
+    scale: 0.85,
+    opacity: 0.85
+  },
+  next: {                           <span class="syz_note">// 下一张：右移 + 前移 + 反向倾斜</span>
+    shadow: true,
+    origin: 'right center',
+    translate: ['55%', 0, 150],
+    rotate: [0, -20, 0],
+    scale: 1.08
+  }
+}</code></pre>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>📊 prev / next 参数逐项说明</h4>
+      <table class="syz_ver">
+        <tr><th>参数</th><th>prev（上一张）</th><th>next（下一张）</th><th>为什么这么设</th></tr>
+        <tr><td>translate</td><td>['-45%', 0, -300]</td><td>['55%', 0, 150]</td><td>数组是 [x, y, z]：x 用百分比、相对容器宽；prev 往左挪 45% 并沿 z 后退 300px → 离镜头远、显小；next 从右侧 55% 处沿 z 前移 150px → 贴近镜头、显大</td></tr>
+        <tr><td>rotate</td><td>[0, 35, 0]</td><td>[0, -20, 0]</td><td>数组是 [x, y, z] 三个轴的旋转角度；只有 y 有值＝绕垂直轴转，像海报侧着摆。prev 正转 35°、next 反转 20°，左右对称不打架</td></tr>
+        <tr><td>scale</td><td>0.85</td><td>1.08</td><td>prev 缩到 85% 强化"退到后面"；next 放到 108% 强化"马上进场"，一退一进形成纵深</td></tr>
+        <tr><td>opacity</td><td>0.85</td><td>（默认 1）</td><td>prev 稍微压暗，暗示它不是当前主角；next 保持不透明，因为它是下一张要上台的</td></tr>
+        <tr><td>origin</td><td>'left center'</td><td>'right center'</td><td>变换原点：prev 绕左中旋转缩放，向左侧"张开"；next 绕右中，从右侧"合拢"进来，更像一堵墙的两端</td></tr>
+      </table>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>🗣️ 用我自己的话说：prev 和 next 的 transform 分别控制什么</h4>
+      <div class="syz_prompt" style="background:#f0fdf4;border-left-color:#16a34a;color:#166534">
+        <b>prev</b> 管的是<b>正在离开的那一张怎么退场</b>：它按 <code>translate</code> 往左挪 45%、朝屏幕深处退 300px（离镜头远了自然变小），再按 <code>rotate</code> 绕 Y 轴正转 35°，配合 <code>scale: 0.85</code> 缩到八成半、<code>opacity: 0.85</code> 稍微压暗——像被人推到选片墙左边远处的一张旧海报。<br>
+        <b>next</b> 管的是<b>正在进场的那一张怎么登场</b>：它从右边 55% 的位置走进来、沿 z 轴朝镜头前移 150px（离镜头近就变大），再绕 Y 轴反转 20°、<code>scale: 1.08</code> 放大 8%——像有人从右边递过来一张新海报，正好递到你眼前。<br>
+        <b>什么时候用哪个：</b>我向前翻（点 next 箭头 / 往左拖）时，上一张按 prev 退场、下一张按 next 进场；往回翻时两张角色互换，同一套参数被 Swiper 反向使用。所以 <b>prev 是"退场姿势"，next 是"进场姿势"，两边都要写——缺一边，那一侧的画面就会跳空。</b>另外 <code>translate</code> 里的百分比是相对容器宽高，真正决定"近大远小"的是 z 值。
+      </div>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>🧪 验证结论</h4>
+      <table class="syz_ver">
+        <tr><th>验证点</th><th>结果</th><th>一句话结论</th></tr>
+        <tr><td>第 7 个按钮存在且可点击</td><td class="syz_yes">✅</td><td>按钮组末尾「creative 电影墙」，点击后高亮 syz_on</td></tr>
+        <tr><td>上一张缩小左移带角度</td><td class="syz_yes">✅</td><td>过渡中上一张明显左移、后退、变小并绕 Y 轴倾斜</td></tr>
+        <tr><td>下一张放大右移进场</td><td class="syz_yes">✅</td><td>下一张从右侧进场，前移放大，像递上一张新海报</td></tr>
+        <tr><td>整体"像电影选片墙"</td><td class="syz_yes">✅</td><td>中间正常、左后一张歪的、右前一张大的，三张错落堆叠</td></tr>
+        <tr><td>切回其它效果仍正常</td><td class="syz_yes">✅</td><td>creative 之后点 fade / cube，销毁重建后干净切换，无残留样式</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 任务三 · 综合创作 -->
+  <div class="syz_doc">
+    <div class="syz_doc-head">
+      <h2>🚢 任务三 · 综合创作：第六件展品 + 超纲能力</h2>
+      <small>爱达·魔都号加入全部 4 个演示台 · keyboard 键盘控制装在演示一 · 附与 AI 的关键对话记录</small>
+    </div>
+    <p class="syz_doc-txt">这一章做两件事：<b>①</b> 给光影展补上<b>第六件展品「爱达·魔都号」</b>——首艘国产大型邮轮，2024 年 1 月 1 日商业首航，图片按 <code>swiper-imgs/adora_1.png</code>（横版 16:9）引用；<b>②</b> 挑一个课堂没讲过的 Swiper 能力加上去，我选 <b>keyboard 键盘控制</b>，装在演示一上。</p>
+
+    <div class="syz_doc-card">
+      <h4>🛳️ 第 1 件事 · 第六件展品「爱达·魔都号」</h4>
+      <div class="syz_need">
+        slide 结构与其它 5 张完全一致：<code>&lt;div class="swiper-slide"&gt;</code> 里放 <code>img</code> 加 <code>.syz_cap</code>（h3 标题 + p 说明）。四个演示台（<code>#syz_sw1</code>～<code>#syz_sw4</code>）同步新增，各加一张后圆点分页器自动从 5 个变成 6 个。
+      </div>
+      <pre class="syz_code"><code>&lt;div class="swiper-slide"&gt;
+  &lt;img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"&gt;
+  &lt;div class="syz_cap"&gt;
+    &lt;h3&gt;爱达·魔都号&lt;/h3&gt;
+    &lt;p&gt;国产首艘大型邮轮，2024 年 1 月 1 日商业首航&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>⌨️ 第 2 件事 · 超纲能力 keyboard 键盘控制（与 AI 的关键对话）</h4>
+      <div class="syz_prompt"><b>我的第 1 轮提示词：</b>用 Swiper 11 给页面里的 #syz_sw1 轮播加上键盘控制，左右方向键可以翻页，只改初始化配置。</div>
+      <pre class="syz_code"><code>keyboard: true      <span class="syz_bad">// 🤖 AI 第 1 轮回答：能翻页，但这页会出问题（见下）</span></code></pre>
+      <div class="syz_need" style="border-style:solid;border-color:#fca5a5;background:#fef2f2;color:#991b1b">
+        <b>🧪 实测发现的问题：</b>这个页面很长、还有另外 3 个轮播。用 <code>keyboard: true</code> 后不管滚动到哪一段，按 ← → 都在切演示一，在其它区块看内容时方向键被它"抢"走了。
+      </div>
+      <div class="syz_prompt" style="margin-top:10px"><b>追问提示词（第 2 轮）：</b>页面很长，怎么让键盘只在演示一出现在屏幕可视区域内时才生效，其它位置按方向键不受影响？</div>
+      <div class="syz_prompt" style="background:#f0fdf4;border-left-color:#16a34a;color:#166534;margin-top:10px">
+        <b>🤖 AI 第 2 轮关键回答：</b>把 keyboard 写成对象，加 <code>onlyInViewport: true</code>——Swiper 只在实例进入视口时才监听方向键。<code>keyboard: true</code> 其实就是 <code>{ enabled: true }</code> 的简写，不写 onlyInViewport 就等于全页面抢按键。
+      </div>
+      <h4 style="margin-top:14px">📌 最终参数（写在 #syz_sw1 的初始化里）</h4>
+      <table class="syz_ver">
+        <tr><th>参数</th><th>取值</th><th>作用</th></tr>
+        <tr><td>keyboard.enabled</td><td>true</td><td>打开键盘模块，← → 方向键上一张 / 下一张</td></tr>
+        <tr><td>keyboard.onlyInViewport</td><td>true</td><td>只有轮播出现在视口内才接管方向键，滚出视口自动失效，不干扰页面其它区域</td></tr>
+      </table>
+      <span class="syz_concl" style="color:#166534"><b>一句话结论：</b>AI 第一次并没有写错，是我第一次没说清页面上下文（长页面 + 4 个轮播）；补上上下文再追问，<code>onlyInViewport: true</code> 才是这一页的正确答案。</span>
+    </div>
+
+    <div class="syz_doc-card">
+      <h4>🧪 验证结论</h4>
+      <table class="syz_ver">
+        <tr><th>验证点</th><th>结果</th><th>一句话结论</th></tr>
+        <tr><td>第六件展品出现在 4 个演示</td><td class="syz_yes">✅</td><td>4 个演示台都是 6 张，结构与其它展品完全一致</td></tr>
+        <tr><td>圆点自动变 6 个</td><td class="syz_yes">✅</td><td>演示二 / 三 / 四的圆点数量随幻灯片数量自动增加</td></tr>
+        <tr><td>演示一在视口内：方向键翻页</td><td class="syz_yes">✅</td><td>滚动到演示一，按 → 翻下一张，按 ← 翻回来</td></tr>
+        <tr><td>滚出视口：方向键不再被抢</td><td class="syz_yes">✅</td><td>滚到页面底部按 →，演示一纹丝不动</td></tr>
+        <tr><td>原有功能不受影响</td><td class="syz_yes">✅</td><td>自动播放、圆点、箭头、7 种效果切换全部正常</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 任务 1 -->
+  <div class="syz_sec">
+    <div class="syz_sec-head">
+      <span class="syz_no">1</span>
+      <h2>救活最小轮播<small>三行 JS · 让照片可以拖动</small></h2>
+    </div>
+    <p class="syz_txt">下面是"最小轮播"骨架：三层结构齐全，但因为没有初始化，照片<b>僵在第一张</b>。请写出初始化代码，让它至少<b>可以按住拖动</b>。</p>
+    <div class="syz_req">
+      <h3>✍️ 任务 1 要求</h3>
+      <p>在页面底部 <code>&lt;script&gt;</code> 中初始化 <code>#syz_sw1</code>，让它成为可拖动的轮播（最基础写法，一个空配置对象即可）。</p>
+      <span class="syz_star">⭐ 验证标准：按住鼠标左右拖动，照片能跟着手走</span>
+    </div>
+    <div class="syz_demo">
+      <span class="syz_demo-tag">🎛️ 演示一 · 最小轮播（救活后按住拖一拖）</span>
+      <div class="syz_swiper">
+        <div class="swiper" id="syz_sw1">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>2022 年全面建成 · 中国人的太空家园</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>350 km/h · 世界商业运营最高时速</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>2023 年商业首航 · 国产干线客机翱翔蓝天</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>10909 米 · 触碰地球第四极马里亚纳海沟</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>500 米口径 · 世界最大单口径射电望远镜</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>国产首艘大型邮轮，2024 年 1 月 1 日商业首航</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 任务 2 -->
+  <div class="syz_sec">
+    <div class="syz_sec-head">
+      <span class="syz_no">2</span>
+      <h2>装上遥控器<small>pagination 圆点 + navigation 箭头</small></h2>
+    </div>
+    <p class="syz_txt">HTML 里已经埋好了三个"遥控器"元素：<code>#syz_pag2</code>（圆点）、<code>#syz_prev2</code> / <code>#syz_next2</code>（左右箭头）。请通过配置让它们"通电"。</p>
+    <div class="syz_req">
+      <h3>✍️ 任务 2 要求</h3>
+      <p>初始化 <code>#syz_sw2</code>，实现 4 个效果：<b>① 无缝循环</b>（loop）<b>② 切换动画时长 600 毫秒</b>（speed）<b>③ 圆点分页器且可点击跳转</b>（pagination，别漏 el）<b>④ 两侧箭头可切换</b>（navigation）。</p>
+      <span class="syz_star">⭐ 验证标准：点圆点能跳转、点箭头能翻页、最后一张继续往后翻会回到第一张</span>
+    </div>
+    <div class="syz_demo">
+      <span class="syz_demo-tag">🎛️ 演示二 · 圆点可点 + 箭头可切</span>
+      <div class="syz_swiper">
+        <div class="swiper" id="syz_sw2">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>三舱结构 · 神舟乘组常年值守</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>京张高铁智能驾驶 · 百年京张到智能京张</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>让中国人的大飞机梦照进现实</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>坐底万米 · 深海探测进入"中国时代"</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>南仁东先生 22 年铸就的观天巨目</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>首艘国产大型邮轮 · 海上移动城市</p></div></div>
+          </div>
+          <div class="swiper-pagination" id="syz_pag2"></div>
+          <div class="swiper-button-prev" id="syz_prev2"></div>
+          <div class="swiper-button-next" id="syz_next2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 任务 3 -->
+  <div class="syz_sec">
+    <div class="syz_sec-head">
+      <span class="syz_no">3</span>
+      <h2>让它自己翻页<small>autoplay 自动播放 + loop 无缝续播</small></h2>
+    </div>
+    <p class="syz_txt">网页 Banner 最常见的形态：<b>自己会翻页</b>。<code>autoplay.delay</code> 控制每张停留的毫秒数，<code>disableOnInteraction: false</code> 表示用户手动滑动之后自动播放<b>不停止</b>。</p>
+    <div class="syz_req">
+      <h3>✍️ 任务 3 要求</h3>
+      <p>初始化 <code>#syz_sw3</code>，实现：<b>① 循环播放</b> <b>② 每 2.6 秒自动翻页</b> <b>③ 用户拖动之后自动播放继续</b> <b>④ 保留底部圆点分页器（#syz_pag3）</b>。</p>
+      <span class="syz_star">⭐ 验证标准：什么都不做它会自己翻；拖一下松手后，它还能接着自动翻</span>
+    </div>
+    <div class="syz_demo">
+      <span class="syz_demo-tag">🎛️ 演示三 · 每 2.6 秒自动翻页（救活后什么都不用做，看着就行）</span>
+      <div class="syz_swiper">
+        <div class="swiper" id="syz_sw3">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>巡天遥看一千河</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>中国速度 · 风驰电掣</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>蓝天之上 · 大国担当</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>万米深潜 · 无畏探索</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>仰望星空 · 脚踏实地</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>中国邮轮经济的新起点</p></div></div>
+          </div>
+          <div class="swiper-pagination" id="syz_pag3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 任务 4 -->
+  <div class="syz_sec">
+    <div class="syz_sec-head">
+      <span class="syz_no">4</span>
+      <h2>六种效果随心换<small>effect 参数 + 进阶：按钮实时切换</small></h2>
+    </div>
+    <p class="syz_txt">改一个 <code>effect</code> 参数，轮播立刻换一种"性格"：slide / fade / cube / coverflow / flip / cards。上面的 6 个按钮已经绑好了点击事件（读取 <code>btn.dataset.fx</code>），JS 还需要你补两段。</p>
+    <div class="syz_req">
+      <h3>✍️ 任务 4 要求</h3>
+      <p><b>基础分</b>：初始化 <code>#syz_sw4</code>，实现循环 + 自动播放（3.2 秒）+ 圆点分页器（#syz_pag4），初始效果为 <code>'slide'</code>，动画时长 800 毫秒。</p>
+      <p><b>进阶分</b>：补全按钮点击事件中的 TODO——实现点击按钮<b>切换效果</b>。提示：Swiper 动态换 effect 不能只改参数，需要<b>先销毁旧实例再重建</b>（destroy + new）。</p>
+      <span class="syz_star">⭐ 验证标准：基础分——轮播自动翻页；进阶分——点 cube 按钮变 3D 立方体、点 fade 变淡入淡出</span>
+    </div>
+    <div class="syz_fx">
+      <button data-fx="slide">slide 平推（稳重）</button>
+      <button data-fx="fade">fade 淡入淡出（优雅）</button>
+      <button class="syz_on" data-fx="cube">cube 3D 立方体（炫酷·默认）</button>
+      <button data-fx="coverflow">coverflow 画廊堆叠（沉浸）</button>
+      <button data-fx="flip">flip 翻页（复古）</button>
+      <button data-fx="cards">cards 卡片（俏皮）</button>
+      <button data-fx="creative">creative 电影墙</button>
+    </div>
+    <div class="syz_demo">
+      <span class="syz_demo-tag">🎛️ 演示四 · 效果实验台（点按钮切换 effect）</span>
+      <div class="syz_swiper">
+        <div class="swiper" id="syz_sw4">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>试试上面的效果按钮</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>同一组照片，六种讲述方式</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>企业官网爱用 fade</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>游戏网站爱用 cube</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>相册页面爱用 coverflow</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>新展品也来试效果</p></div></div>
+          </div>
+          <div class="swiper-pagination" id="syz_pag4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="syz_back"><a href="index.html">← 返回课堂实践中心</a>　<a href="swiper-lesson.html">查看教师讲解版 →</a></div>
+
+  <footer>Swiper 课堂操作任务 · 大国重器光影展（学生版） · 高级网页设计 · 2026-2027-1</footer>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  ✍️ 学生作答区：把 4 个轮播全部救活（参考各演示台上方的绿色任务卡）
+  // ══════════════════════════════════════════════════════════
+
+  // ── 任务 1：初始化 #syz_sw1，让它至少可以拖动 ──
+  // 函数功能：初始化 #syz_sw1 最小轮播——任务三的超纲能力 keyboard 键盘控制，左右方向键翻页；onlyInViewport 让键盘只在演示一进入可视区域时才生效，滚出视口就不再抢方向键
+  var syz_sw1Swiper = new Swiper('#syz_sw1', {
+    keyboard: {
+      enabled: true,          // 启用键盘模块（← → 翻上一张 / 下一张）
+      onlyInViewport: true    // 只有演示一在视口内才接管方向键，避免长页面其它区块被抢按键
+    }
+  });
+
+
+  // ── 任务 2：初始化 #syz_sw2，循环 + 600ms + 圆点可点 + 箭头切换 ──
+  // 函数功能：初始化 #syz_sw2 轮播——无缝循环、切换动画 600 毫秒、圆点分页器可点击跳转、两侧箭头可切换
+  var syz_sw2Swiper = new Swiper('#syz_sw2', {
+    loop: true,                           // 无缝循环：最后一张往后翻回到第一张
+    speed: 600,                           // 切换动画时长 600 毫秒
+    pagination: {
+      el: '#syz_pag2',                    // 用 id 精确绑定演示二的圆点容器
+      clickable: true                     // 圆点可点击跳转
+    },
+    navigation: {
+      nextEl: '#syz_next2',               // 右侧箭头
+      prevEl: '#syz_prev2'                // 左侧箭头
+    }
+  });
+
+
+  // ── 任务 3：初始化 #syz_sw3，循环 + 2.6 秒自动翻页 + 拖动后不停 + 圆点 ──
+  // 函数功能：初始化 #syz_sw3 轮播——无缝循环、每 2.6 秒自动翻页且用户拖动后继续播放、底部圆点分页器可点击
+  var syz_sw3Swiper = new Swiper('#syz_sw3', {
+    loop: true,                           // 无缝循环
+    autoplay: {
+      delay: 2600,                        // 每张停留 2.6 秒
+      disableOnInteraction: false         // 用户拖动松手后自动播放不停止
+    },
+    pagination: {
+      el: '#syz_pag3',                    // 演示三的圆点容器
+      clickable: true                     // 圆点可点击
+    }
+  });
+
+
+  // ── 任务 4：初始化 #syz_sw4，循环 + 3.2 秒自动播放 + 圆点 + 初始 effect ──
+  // 函数功能：按传入的 effect 名称生成 #syz_sw4 的 Swiper 配置对象——统一保留无缝循环、3.2 秒自动翻页（手滑不停）、可点击圆点分页；cube 与 creative 再追加各自的专属参数
+  function syz_sw4Config(syz_fx) {
+    var syz_cfg = {
+      loop: true,                 // 无缝循环
+      effect: syz_fx,             // 当前选中的效果
+      speed: 800,                 // 切换动画时长
+      autoplay: {                 // 3.2 秒自动翻页，手动操作后不停止
+        delay: 3200,
+        disableOnInteraction: false
+      },
+      pagination: {               // 圆点分页器可点击跳转
+        el: '#syz_pag4',
+        clickable: true
+      }
+    };
+
+    // cube 的立体感：投影 + 侧面阴影
+    if (syz_fx === 'cube') {
+      syz_cfg.cubeEffect = {
+        shadow: true,
+        slideShadows: true,
+        shadowOffset: 20,
+        shadowScale: 0.94
+      };
+    }
+
+    // creative 电影墙：上一张缩小、左移并绕 Y 轴倾斜；下一张沿 Z 轴前移放大、右移进场
+    if (syz_fx === 'creative') {
+      syz_cfg.creativeEffect = {
+        limitProgress: 2,
+        prev: {
+          shadow: true,
+          origin: 'left center',
+          translate: ['-45%', 0, -300],   // 左移 45%，Z 轴后退 300px（透视上更小）
+          rotate: [0, 35, 0],             // 绕 Y 轴转 35°，像斜放的电影海报
+          scale: 0.85,                    // 再缩小 15%，强化“退到后面的选片墙”
+          opacity: 0.85
+        },
+        next: {
+          shadow: true,
+          origin: 'right center',
+          translate: ['55%', 0, 150],     // 右移 55%，Z 轴前移 150px（透视上更大）
+          rotate: [0, -20, 0],            // 反向倾斜，形成左右对称
+          scale: 1.08                     // 放大 8%，突出“下一张马上进场”
+        }
+      };
+    }
+
+    return syz_cfg;
+  }
+
+  // 函数功能：初始化 #syz_sw4 轮播（初始效果 cube）
+  var syz_sw4Swiper = new Swiper('#syz_sw4', syz_sw4Config('cube'));
+
+
+  // ── 任务 4 进阶：补全按钮点击事件，实现七种效果实时切换 ──
+  // 提示 1：动态换 effect 只改参数是无效的，必须销毁旧实例再重建（destroy + new）
+  // 提示 2：按钮上已有 data-fx 属性，用 btn.dataset.fx 读取要切换的效果名
+  document.querySelectorAll('.syz_fx button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      // ① 先清除所有按钮的选中状态，再给当前按钮加 syz_on（高亮当前按钮）
+      document.querySelectorAll('.syz_fx button').forEach(function(syz_item){
+        syz_item.classList.remove('syz_on');
+      });
+      btn.classList.add('syz_on');
+
+      // ② 销毁旧的 #syz_sw4 实例（顺带清掉上一个效果残留的内联样式）
+      syz_sw4Swiper.destroy(true, true);
+
+      // ③ 用新 effect 重建实例，其它配置由 syz_sw4Config 原样保留
+      syz_sw4Swiper = new Swiper('#syz_sw4', syz_sw4Config(btn.dataset.fx));
+    });
+  });
+</script>
+</body>
+</html>
