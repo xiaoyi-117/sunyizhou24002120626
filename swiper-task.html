@@ -358,7 +358,7 @@
   <div class="syz_doc">
     <div class="syz_doc-head">
       <h2>🚢 任务三 · 补齐第六件展品，再给它配一个别人没有的手势</h2>
-      <small>爱达·魔都号进 4 个演示台 · 圆点从 5 个变 6 个 · 超纲能力最后定成 zoom 双击放大（装在演示二）· 附中途换方案的全过程</small>
+      <small>爱达·魔都号进 4 个演示台 · 圆点从 5 个变 6 个 · 超纲能力最后定成 zoom，单开演示五做「放大看展」· 附中途换两次方案的全过程</small>
     </div>
     <p class="syz_doc-txt">这一章分两段：先把展品摆齐——<b>爱达·魔都号</b>，我国第一艘自己造的大型邮轮，2024 年 1 月 1 日跑的商业首航，图用 <code>swiper-imgs/adora_1.png</code>（横版 16:9）；再从课堂没讲过的能力里挑一个装上，顺便讲讲我为什么中途把方案换了。</p>
 
@@ -376,22 +376,23 @@
     </div>
 
     <div class="syz_doc-card">
-      <h4>🔍 第二段 · 超纲能力：换了两次，才落定 zoom</h4>
+      <h4>🔍 第二段 · 超纲能力：从挂在老演示台上，到单开一台</h4>
       <div class="syz_prompt"><b>第一轮我问的是：</b>给 #syz_sw1 加上键盘控制，左右方向键能翻页，只改初始化配置。</div>
       <p class="syz_doc-txt" style="margin:10px 0">它给的 <code>keyboard: true</code> 确实能翻，可我这页又长、又站着四个轮播，按方向键的时候不管在看哪一段，都在偷偷翻演示一。追问之后补了 <code>onlyInViewport: true</code>，才算老实。功能是通了，但交作业那天发现班里一大半人都写的 keyboard，几个人并排一按，动作一模一样。</p>
       <div class="syz_prompt" style="margin-top:10px"><b>于是第二轮我改口：</b>键盘那套不要了，换成双击图片放大的 zoom，装在演示二 #syz_sw2 上：最大放到 3 倍，还原时回到 1 倍，同一张图再双击一次能收回去，只改初始化配置，别的演示台不许动。</div>
+      <div class="syz_prompt" style="margin-top:10px"><b>第三轮我又补了一句：</b>别再往现成的演示台上挂手势了——那样看着还是"原来那台机器加了个动作"，不算新的播放模式。另开一个演示五 <code>#syz_sw5</code>，专门用来放大看展：循环播放、圆点可点、双击放大到 3 倍、再双击收回原比例；演示二恢复成原来的样子，不许留 zoom 的痕迹。</div>
       <pre class="syz_code"><code>zoom: {
   maxRatio: 3,      <span class="syz_note">// 最多放到 3 倍</span>
   minRatio: 1,      <span class="syz_note">// 收回时回到原始大小</span>
   toggle: false     <span class="syz_note">// 双击由我自己接管，别让内置手势再抢一次</span>
 }
 
-document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
+document.querySelector('#syz_sw5').addEventListener('dblclick', function (e) {
   if (!e.target.closest('.swiper-zoom-container img')) return;
-  swiper2.zoom.scale &gt; 1 ? swiper2.zoom.out() : swiper2.zoom.in();
+  swiper5.zoom.scale &gt; 1 ? swiper5.zoom.out() : swiper5.zoom.in();
 });</code></pre>
       <div class="syz_need" style="border-style:solid;border-color:#fca5a5;background:#fef2f2;color:#991b1b">
-        <b>结果双击一点反应都没有。</b>翻回去查，踩了两处：一是六张图外面都没包 <code>&lt;div class="swiper-zoom-container"&gt;</code>，Swiper 找不到能缩放的对象，事件等于白接；二是把希望全押在 <code>toggle</code> 上，可它对我这种鼠标双击压根不响应——实测双击前后 <code>transform</code> 都是 1 倍。最后的做法：图一张张包进 zoom 容器，<code>toggle</code> 干脆关掉，自己绑 <code>dblclick</code> 调 <code>zoom.in()</code> / <code>zoom.out()</code>，改完实测 1 倍 → 3 倍 → 1 倍。
+        <b>结果双击一点反应都没有。</b>翻回去查，踩了两处：一是六张图外面都没包 <code>&lt;div class="swiper-zoom-container"&gt;</code>，Swiper 找不到能缩放的对象，事件等于白接；二是把希望全押在 <code>toggle</code> 上，可它对我这种鼠标双击压根不响应——实测双击前后 <code>transform</code> 都是 1 倍。最后的做法：演示五的图一张张包进 zoom 容器，<code>toggle</code> 干脆关掉，自己绑 <code>dblclick</code> 调 <code>zoom.in()</code> / <code>zoom.out()</code>，改完实测 1 倍 → 3 倍 → 1 倍；演示二那边把容器和 zoom 参数一起撤掉，回到最初的配置。
       </div>
       <table class="syz_ver" style="margin-top:12px">
         <tr><th>关键项</th><th>我最后写成的</th><th>它负责什么</th></tr>
@@ -401,7 +402,7 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
         <tr><td>HTML 结构</td><td><code>&lt;div class="swiper-zoom-container"&gt;</code> 包住 img</td><td>给 Swiper 一个专门负责变换的壳，缺了它双击完全无效</td></tr>
         <tr><td>dblclick 处理</td><td><code>zoom.in()</code> / <code>zoom.out()</code> 二选一</td><td>按当前 <code>zoom.scale</code> 判断该放大还是收回，一次双击只做一件事</td></tr>
       </table>
-      <span class="syz_concl" style="color:#166534">换能力这事教会我：能跑的方案不等于好方案。zoom 至少和"看展品"这件事有关系——邮轮的舰岛、动车组的受电弓，双击凑近才看得清。</span>
+      <span class="syz_concl" style="color:#166534">换能力这事教会我：能跑的方案不等于好方案，装得进去也不等于装对了地方。单开一台之后，zoom 才真正像一种"看展"的办法——邮轮的舰岛、动车组的受电弓，双击凑近才看得清；演示二也保住了原本的干净配置。</span>
     </div>
 
     <div class="syz_doc-card">
@@ -410,9 +411,10 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
         <tr><th>检查的点</th><th>看到的情况</th><th>结论</th></tr>
         <tr><td>四个台子里有没有第六张</td><td>四台都是 6 张，新展品的结构和前五张完全一致</td><td class="syz_yes">✅ 有</td></tr>
         <tr><td>圆点数量</td><td>演示二、三、四的圆点从 5 个变 6 个，跟着幻灯片数量走</td><td class="syz_yes">✅ 对</td></tr>
-        <tr><td>演示二双击图片</td><td>图片原地放大，按住可以拖着看细节</td><td class="syz_yes">✅ 灵</td></tr>
+        <tr><td>演示五双击图片</td><td>图片原地放大到 3 倍，按住可以拖着看细节</td><td class="syz_yes">✅ 灵</td></tr>
         <tr><td>再双击一次</td><td>缩回原始比例，画面位置不跑偏</td><td class="syz_yes">✅ 灵</td></tr>
-        <tr><td>另外三个台子</td><td>没被 zoom 影响，拖动、圆点、箭头、7 种效果都照旧</td><td class="syz_yes">✅ 正常</td></tr>
+        <tr><td>演示二有没有留尾巴</td><td>zoom 参数、zoom 容器都撤干净了，只有循环、600 毫秒、圆点、箭头</td><td class="syz_yes">✅ 干净</td></tr>
+        <tr><td>另外几个台子</td><td>演示一、三、四没被 zoom 影响，拖动、圆点、箭头、7 种效果都照旧</td><td class="syz_yes">✅ 正常</td></tr>
       </table>
     </div>
 
@@ -425,6 +427,10 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
       <details class="syz_faq-item">
         <summary>双击没反应，一般是哪儿没写对</summary>
         <p>先查结构再查参数：图片外面有没有 <code>.swiper-zoom-container</code> 这层壳，少了它 Swiper 根本找不到可缩放的东西；壳有了还是没反应，就别再指望内置的 <code>toggle</code>，自己绑一个 <code>dblclick</code> 调 <code>zoom.in()</code> 最稳。我这次两样全踩了，所以第一次双击完全像没接上。</p>
+      </details>
+      <details class="syz_faq-item">
+        <summary>为什么非要单开一个演示台，直接加在演示二上不行吗</summary>
+        <p>加得上，但看着不像新东西：演示二本来就是"循环 + 圆点 + 箭头"的常规轮播，多一个双击，观感还是那台机器。单开一台之后，标题、提示语、交互都能围着"凑近看展品"来写，才算一种新的看法；而且演示二保持原配置，前面任务的验证照样成立，不会互相牵连。</p>
       </details>
       <details class="syz_faq-item">
         <summary>放大之后还能拖到下一张吗</summary>
@@ -479,12 +485,12 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
       <div class="syz_swiper">
         <div class="swiper" id="syz_sw2">
           <div class="swiper-wrapper">
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"></div><div class="syz_cap"><h3>天宫空间站</h3><p>三舱结构 · 神舟乘组常年值守</p></div></div>
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"></div><div class="syz_cap"><h3>复兴号动车组</h3><p>京张高铁智能驾驶 · 百年京张到智能京张</p></div></div>
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"></div><div class="syz_cap"><h3>C919 大飞机</h3><p>让中国人的大飞机梦照进现实</p></div></div>
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"></div><div class="syz_cap"><h3>奋斗者号</h3><p>坐底万米 · 深海探测进入"中国时代"</p></div></div>
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"></div><div class="syz_cap"><h3>中国天眼 FAST</h3><p>南仁东先生 22 年铸就的观天巨目</p></div></div>
-            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"></div><div class="syz_cap"><h3>爱达·魔都号</h3><p>首艘国产大型邮轮 · 海上移动城市</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"><div class="syz_cap"><h3>天宫空间站</h3><p>三舱结构 · 神舟乘组常年值守</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"><div class="syz_cap"><h3>复兴号动车组</h3><p>京张高铁智能驾驶 · 百年京张到智能京张</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"><div class="syz_cap"><h3>C919 大飞机</h3><p>让中国人的大飞机梦照进现实</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"><div class="syz_cap"><h3>奋斗者号</h3><p>坐底万米 · 深海探测进入"中国时代"</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"><div class="syz_cap"><h3>中国天眼 FAST</h3><p>南仁东先生 22 年铸就的观天巨目</p></div></div>
+            <div class="swiper-slide"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"><div class="syz_cap"><h3>爱达·魔都号</h3><p>首艘国产大型邮轮 · 海上移动城市</p></div></div>
           </div>
           <div class="swiper-pagination" id="syz_pag2"></div>
           <div class="swiper-button-prev" id="syz_prev2"></div>
@@ -564,6 +570,31 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
     </div>
   </div>
 
+  <!-- 任务三 超纲能力：新增演示台，换一种看展方式 -->
+  <div class="syz_sec">
+    <div class="syz_sec-head">
+      <span class="syz_no">＋</span>
+      <h2>放大看展<small>课堂没讲过的 zoom：双击放大、拖动平移</small></h2>
+    </div>
+    <p class="syz_txt">这一台不自动换位，像把画册摊在桌上：双击任意一张图放大到 3 倍，按住拖动看舰岛、看受电弓这种细节，再双击收回原比例。要点是每张图外面必须包一层 <code>.swiper-zoom-container</code>，再配 <code>zoom.maxRatio</code> 和 <code>zoom.minRatio</code>；双击动作由页面自己监听，避免和内置手势打架。</p>
+    <div class="syz_demo">
+      <span class="syz_demo-tag">🔍 演示五 · zoom 放大看展（双击进出）</span>
+      <div class="syz_swiper">
+        <div class="swiper" id="syz_sw5">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/tiangong_1.jpg" alt="天宫空间站"></div><div class="syz_cap"><h3>天宫空间站</h3><p>双击凑近看舱段对接</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fuxing_1.jpg" alt="复兴号动车组"></div><div class="syz_cap"><h3>复兴号动车组</h3><p>拉近看流线型车头</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/c919_1.jpg" alt="C919大飞机"></div><div class="syz_cap"><h3>C919 大飞机</h3><p>放大数一数机翼上的细节</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fendouzhe_1.jpg" alt="奋斗者号"></div><div class="syz_cap"><h3>奋斗者号</h3><p>贴近看机械臂和观察窗</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/fast_1.jpg" alt="中国天眼"></div><div class="syz_cap"><h3>中国天眼 FAST</h3><p>放大看反射面板拼缝</p></div></div>
+            <div class="swiper-slide"><div class="swiper-zoom-container"><img src="swiper-imgs/adora_1.png" alt="爱达·魔都号"></div><div class="syz_cap"><h3>爱达·魔都号</h3><p>双击看清船名和涂装</p></div></div>
+          </div>
+          <div class="swiper-pagination" id="syz_pag5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="syz_back"><a href="index.html">← 返回课堂实践中心</a>　<a href="swiper-lesson.html">查看教师讲解版 →</a></div>
 
   <footer>Swiper 课堂操作任务 · 大国重器光影展（学生版） · 高级网页设计 · 2026-2027-1</footer>
@@ -580,15 +611,10 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
 
 
   // ── 任务 2：初始化 #syz_sw2，循环 + 600ms + 圆点可点 + 箭头切换 ──
-  // 函数功能：初始化 #syz_sw2 轮播——无缝循环、切换动画 600 毫秒、圆点可点、箭头可切，并开启 zoom 双击放大（任务三的超纲能力）
+  // 函数功能：初始化 #syz_sw2 轮播——无缝循环、切换动画 600 毫秒、圆点可点、箭头可切
   var syz_sw2Swiper = new Swiper('#syz_sw2', {
     loop: true,                           // 无缝循环：最后一张往后翻回到第一张
     speed: 600,                           // 切换动画时长 600 毫秒
-    zoom: {
-      maxRatio: 3,                        // 最多放大到 3 倍
-      minRatio: 1,                        // 还原时回到原始比例
-      toggle: false                       // 双击放大交给下面自己绑的 dblclick，避免和内置手势重复触发
-    },
     pagination: {
       el: '#syz_pag2',                    // 用 id 精确绑定演示二的圆点容器
       clickable: true                     // 圆点可点击跳转
@@ -596,16 +622,6 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
     navigation: {
       nextEl: '#syz_next2',               // 右侧箭头
       prevEl: '#syz_prev2'                // 左侧箭头
-    }
-  });
-
-  // 函数功能：演示二的双击缩放——双击图片放大到 3 倍，再双击收回到原始比例（点在圆点/箭头上不触发）
-  document.querySelector('#syz_sw2').addEventListener('dblclick', function(syz_e){
-    if (!syz_e.target.closest('#syz_sw2 .swiper-zoom-container img')) return;
-    if (syz_sw2Swiper.zoom.scale > 1) {
-      syz_sw2Swiper.zoom.out();
-    } else {
-      syz_sw2Swiper.zoom.in();
     }
   });
 
@@ -698,6 +714,33 @@ document.querySelector('#syz_sw2').addEventListener('dblclick', function (e) {
       // ③ 用新 effect 重建实例，其它配置由 syz_sw4Config 原样保留
       syz_sw4Swiper = new Swiper('#syz_sw4', syz_sw4Config(btn.dataset.fx));
     });
+  });
+
+
+  // ── 超纲能力（任务三）：新增演示五 #syz_sw5，把 zoom 做成一种新的看展方式 ──
+  // 函数功能：初始化 #syz_sw5 放大看展轮播——循环播放、圆点可点，开启 zoom（最大 3 倍、最小 1 倍）
+  var syz_sw5Swiper = new Swiper('#syz_sw5', {
+    loop: true,                     // 循环播放
+    speed: 600,                     // 切换动画 600 毫秒
+    zoom: {
+      maxRatio: 3,                  // 最多放大到 3 倍
+      minRatio: 1,                  // 收回时回到原始比例
+      toggle: false                 // 双击交给下面的 dblclick 自己处理
+    },
+    pagination: {
+      el: '#syz_pag5',              // 演示五的圆点容器
+      clickable: true               // 圆点可点击
+    }
+  });
+
+  // 函数功能：演示五的双击缩放——双击图片放大到 3 倍，再双击收回原始比例；点在圆点或文字上不触发
+  document.querySelector('#syz_sw5').addEventListener('dblclick', function(syz_e){
+    if (!syz_e.target.closest('#syz_sw5 .swiper-zoom-container img')) return;
+    if (syz_sw5Swiper.zoom.scale > 1) {
+      syz_sw5Swiper.zoom.out();
+    } else {
+      syz_sw5Swiper.zoom.in();
+    }
   });
 </script>
 </body>
