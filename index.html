@@ -9,79 +9,123 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
         }
         body {
-            background-color: #f3f0fa;
-            padding: 40px 20px;
+            min-height: 100vh;
+            padding: 60px 22px 80px;
+            color: #2f2749;
+            background:
+                radial-gradient(circle at 10% 6%, #e9d9ff 0%, transparent 42%),
+                radial-gradient(circle at 92% 0%, #ddd4ff 0%, transparent 38%),
+                linear-gradient(180deg, #fbf9ff 0%, #f2ecfd 100%);
+            background-attachment: fixed;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1080px;
             margin: 0 auto;
         }
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 12px;
+            font-size: 36px;
+            letter-spacing: 3px;
+            color: #3a2c62;
+            font-weight: 700;
         }
         .subtitle {
             text-align: center;
-            color: #666;
-            margin-bottom: 48px;
+            color: #9285b3;
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin: 12px 0 52px;
         }
         .card-wrap {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 22px;
         }
         .card-item {
-            flex: 1;
-            min-width: 240px;
-            background: #ffffff;
-            padding: 28px 24px;
-            border-radius: 16px;
-            box-shadow: 0 2px 10px #00000010;
+            display: flex;
+            flex-direction: column;
+            min-height: 284px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid #ece5fb;
+            border-radius: 18px;
+            padding: 26px 24px;
+            box-shadow: 0 6px 22px rgba(120, 86, 200, 0.07);
+            transition: transform 0.28s, box-shadow 0.28s, border-color 0.28s;
+        }
+        .card-item:hover {
+            transform: translateY(-6px);
+            border-color: #d7c8f5;
+            box-shadow: 0 18px 38px rgba(120, 86, 200, 0.18);
         }
         .card-icon {
-            width:44px;
-            height:44px;
-            background:#9b78e8;
-            border-radius:10px;
-            color:white;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:bold;
-            font-size:20px;
-            margin-bottom:16px;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #bda4ff, #8a6be0);
+            box-shadow: 0 8px 16px rgba(139, 108, 224, 0.32);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 18px;
         }
-        .card-item h3{
-            color:#222;
-            margin-bottom:8px;
+        .card-tag {
+            display: inline-block;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: #f4efff;
+            border: 1px solid #e7dcfb;
+            color: #7c5fd3;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
-        .card-item p{
-            color:#666;
-            font-size:14px;
-            margin-bottom:20px;
-            line-height:1.5;
+        .card-item h3 {
+            color: #352a55;
+            font-size: 17px;
+            margin-bottom: 8px;
         }
-        .card-item a{
-            display:inline-block;
-            padding:8px 16px;
-            background:#9b78e8;
-            color:#fff;
-            text-decoration:none;
-            border-radius:8px;
-            font-size:14px;
+        .card-item p {
+            flex: 1;
+            color: #7d7396;
+            font-size: 13.5px;
+            line-height: 1.65;
+            margin-bottom: 22px;
         }
-        .card-item a:hover{
-            background:#825ed8;
+        .card-item a {
+            align-self: flex-start;
+            display: inline-block;
+            padding: 9px 18px;
+            background: #f3edff;
+            color: #6d4fc4;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.25s, color 0.25s;
         }
-        .tip-text{
-            margin-top:40px;
-            text-align:center;
-            color:#888;
-            font-size:14px;
+        .card-item a:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .tip-text {
+            margin-top: 44px;
+            text-align: center;
+            color: #a196bb;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 560px) {
+            body { padding: 40px 16px 56px; }
+            h1 { font-size: 28px; letter-spacing: 2px; }
+            .subtitle { margin-bottom: 36px; }
+            .card-wrap { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -94,6 +138,7 @@
             <div class="card-item">
                 <div class="card-icon">★</div>
                 <h3>Flex复习</h3>
+                <span class="card-tag">HTML · CSS 布局</span>
                 <p>对Flex布局的复习和巩固。</p>
                 <a href="1.html">进入实践</a>
             </div>
@@ -101,6 +146,7 @@
             <div class="card-item">
                 <div class="card-icon">F</div>
                 <h3>字体图标</h3>
+                <span class="card-tag">iconfont · 底部导航</span>
                 <p>实现APP底部导航。</p>
                 <a href="2.html">进入实践</a>
             </div>
@@ -108,61 +154,123 @@
             <div class="card-item">
                 <div class="card-icon">F</div>
                 <h3>数据类型与运算符</h3>
+                <span class="card-tag">JavaScript 基础</span>
                 <p>学习JavaScript中的数据类型和运算符。</p>
                 <a href="date.html">进入实践</a>
             </div>
-            <!-- 卡片3：date.html 数据类型与运算符 -->
+            <!-- 卡片4：obj.html 对象创建 -->
             <div class="card-item">
-                <div class="card-icon">F</div>
+                <div class="card-icon">O</div>
                 <h3>对象创建</h3>
+                <span class="card-tag">JavaScript 对象</span>
                 <p>对象创建方法。</p>
                 <a href="obj.html">进入实践</a>
             </div>
-            <!-- 卡片3：date.html 数据类型与运算符 -->
+            <!-- 卡片5：js.html 对象的应用 -->
             <div class="card-item">
-                <div class="card-icon">F</div>
+                <div class="card-icon">J</div>
                 <h3>对象的应用</h3>
+                <span class="card-tag">JavaScript 实战</span>
                 <p>对象在实际项目中的应用。</p>
                 <a href="js.html">进入实践</a>
             </div>
-            <!-- 卡片3：date.html 数据类型与运算符 -->
+            <!-- 卡片6：fun.html js函数 -->
             <div class="card-item">
-                <div class="card-icon">F</div>
+                <div class="card-icon">ƒ</div>
                 <h3>js函数</h3>
+                <span class="card-tag">JavaScript 函数</span>
                 <p>JavaScript函数的使用和定义。</p>
                 <a href="fun.html">进入实践</a>
             </div>
             
-            <!-- 字体图标库预览 -->
+            <!-- 卡片7：font/demo_index.html 字体图标库预览 -->
             <div class="card-item">
                 <div class="card-icon">图</div>
                 <h3>字体图标库预览</h3>
+                <span class="card-tag">资源 · 图标库</span>
                 <p>查看项目中使用的字体图标及其代码。</p>
                 <a href="font/demo_index.html">进入实践</a>
             </div>
 
-            <!-- 卡片：tab.html 新闻选项卡 -->
+            <!-- 卡片8：tab.html 新闻选项卡 -->
             <div class="card-item">
                 <div class="card-icon">Tab</div>
                 <h3>新闻选项卡</h3>
+                <span class="card-tag">交互 · Tab 切换</span>
                 <p>国内、省内、国际新闻的Tab选项卡切换。</p>
                 <a href="tab.html">进入实践</a>
             </div>
 
-            <!-- 卡片：tab2.html 新闻选项卡（可复用JS） -->
+            <!-- 卡片9：tab2.html 新闻选项卡（可复用JS） -->
             <div class="card-item">
                 <div class="card-icon">Tab</div>
                 <h3>新闻选项卡II</h3>
+                <span class="card-tag">组件化 · 外链 JS</span>
                 <p>四个选项卡（含最热新闻），外链JS可复用组件实现。</p>
                 <a href="tab2.html">进入实践</a>
             </div>
 
-            <!-- 卡片：tousu.html 投诉信息选项卡（复用JS） -->
+            <!-- 卡片10：tousu.html 投诉信息选项卡（复用JS） -->
             <div class="card-item">
                 <div class="card-icon">诉</div>
                 <h3>投诉信息选项卡</h3>
+                <span class="card-tag">组件复用 · 样式复刻</span>
                 <p>最新投诉、官方回应、追踪调查，复用外链JS组件。</p>
                 <a href="tousu.html">进入实践</a>
+            </div>
+
+            <!-- 卡片11：event.html 事件的冒泡与捕获 -->
+            <div class="card-item">
+                <div class="card-icon">E</div>
+                <h3>事件的冒泡与捕获</h3>
+                <span class="card-tag">事件机制 · DOM</span>
+                <p>演示JavaScript事件冒泡与捕获的传播顺序。</p>
+                <a href="event.html">进入实践</a>
+            </div>
+
+            <!-- 卡片12：swiper-task.html 光影展轮播实战 -->
+            <div class="card-item">
+                <div class="card-icon">S</div>
+                <h3>光影展轮播实战</h3>
+                <span class="card-tag">Swiper · 轮播组件</span>
+                <p>Swiper 轮播：基础配置、creative 电影墙效果与 zoom 放大看展。</p>
+                <a href="swiper-task.html">进入实践</a>
+            </div>
+
+            <!-- 卡片13：poem.html 诗词卡片（Express接口） -->
+            <div class="card-item">
+                <div class="card-icon">诗</div>
+                <h3>诗词卡片</h3>
+                <span class="card-tag">Express · 接口请求</span>
+                <p>上图下文卡片，支持关键词搜索与按标题长度排序，数据来自本地 3004 端口接口。</p>
+                <a href="poem.html">进入实践</a>
+            </div>
+
+            <!-- 卡片14：mobile-gesture.html 移动端美食卡片滑动 -->
+            <div class="card-item">
+                <div class="card-icon">滑</div>
+                <h3>移动端美食卡片</h3>
+                <span class="card-tag">移动端 · 触摸手势</span>
+                <p>四道菜的渐变卡片，监听 touchstart / touchend 计算横向位移，左右滑动切换并带过渡动画。</p>
+                <a href="mobile-gesture.html">进入实践</a>
+            </div>
+
+            <!-- 卡片15：mobile-zoom.html 移动端图片查看器 -->
+            <div class="card-item">
+                <div class="card-icon">放</div>
+                <h3>移动端图片查看器</h3>
+                <span class="card-tag">移动端 · 双指缩放</span>
+                <p>双指按距离比例缩放 1～4 倍、单指拖动、双击切换 1x/2x，松手后自动收回边界内。</p>
+                <a href="mobile-zoom.html">进入实践</a>
+            </div>
+
+            <!-- 卡片16：mobile-sensor.html 摇一摇抽菜谱 -->
+            <div class="card-item">
+                <div class="card-icon">摇</div>
+                <h3>摇一摇抽菜谱</h3>
+                <span class="card-tag">移动端 · 重力感应</span>
+                <p>监听 devicemotion 计算合成加速度，超过 18 触发抽签并冷却 1.5 秒；不支持时降级为按钮抽取。</p>
+                <a href="mobile-sensor.html">进入实践</a>
             </div>
         </div>
     </div>

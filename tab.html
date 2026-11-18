@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周
+  建立时间：2026-11-04
+  使用大模型：GLM-5.3-Flash
+  功能名称：新闻 Tab 选项卡切换
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新闻选项卡</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    /* 返回首页链接 */
+    .syz_back-home {
+      align-self: flex-start;
+      margin-bottom: 16px;
+      color: #3498db;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .syz_back-home:hover {
+      text-decoration: underline;
+    }
+
+    /* 选项卡容器 */
+    .syz_tab-box {
+      width: 640px;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+      overflow: hidden;
+    }
+
+    /* 选项卡按钮栏 */
+    .syz_tab-bar {
+      display: flex;
+      border-bottom: 1px solid #eee;
+    }
+
+    .syz_tab-btn {
+      flex: 1;
+      padding: 14px 0;
+      font-size: 16px;
+      border: none;
+      background: #fafafa;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .syz_tab-btn:hover {
+      color: #e74c3c;
+    }
+
+    /* 选中状态 */
+    .syz_tab-btn.syz_active {
+      background: #fff;
+      color: #e74c3c;
+      font-weight: bold;
+      border-bottom: 2px solid #e74c3c;
+    }
+
+    /* 选项卡面板 */
+    .syz_tab-panel {
+      display: none;
+      padding: 20px 24px;
+    }
+
+    .syz_tab-panel.syz_show {
+      display: block;
+    }
+
+    /* 新闻条目 */
+    .syz_news-item {
+      padding: 10px 0;
+      border-bottom: 1px dashed #eee;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .syz_news-item:last-child {
+      border-bottom: none;
+    }
+
+    .syz_news-item span {
+      color: #999;
+      font-size: 13px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <a class="syz_back-home" href="index.html">返回首页</a>
+
+  <div class="syz_tab-box" id="syz_tabBox">
+    <div class="syz_tab-bar" id="syz_tabBar">
+      <button class="syz_tab-btn syz_active" type="button">国内新闻</button>
+      <button class="syz_tab-btn" type="button">省内新闻</button>
+      <button class="syz_tab-btn" type="button">国际新闻</button>
+    </div>
+
+    <div class="syz_tab-panel syz_show" id="syz_panel0">
+      <p class="syz_news-item"><span>11-04</span>全国科技创新大会在京召开，部署新一轮科技发展规划</p>
+      <p class="syz_news-item"><span>11-03</span>前三季度国民经济运行数据发布，主要指标好于预期</p>
+      <p class="syz_news-item"><span>11-02</span>多条高铁新线路今日开通运营，助力区域协同发展</p>
+      <p class="syz_news-item"><span>11-01</span>全国冬季能源保供工作全面启动，确保群众温暖过冬</p>
+    </div>
+
+    <div class="syz_tab-panel" id="syz_panel1">
+      <p class="syz_news-item"><span>11-04</span>我省举办科技成果转化对接会，签约项目超百个</p>
+      <p class="syz_news-item"><span>11-03</span>省内多条高速公路改扩建工程顺利完工通车</p>
+      <p class="syz_news-item"><span>11-02</span>我省推出多项人才引进新政，最高可享百万补贴</p>
+      <p class="syz_news-item"><span>11-01</span>全省文化旅游季正式启动，景区门票优惠持续一个月</p>
+    </div>
+
+    <div class="syz_tab-panel" id="syz_panel2">
+      <p class="syz_news-item"><span>11-04</span>联合国气候变化大会开幕，多国承诺加大减排力度</p>
+      <p class="syz_news-item"><span>11-03</span>国际航天合作项目取得新进展，新一代飞船试验成功</p>
+      <p class="syz_news-item"><span>11-02</span>全球经济论坛发布年度报告，聚焦数字经济新机遇</p>
+      <p class="syz_news-item"><span>11-01</span>多国签署自贸协定，进一步降低关税壁垒</p>
+    </div>
+  </div>
+
+  <script>
+    // 变量功能：记录当前选中的选项卡索引
+    var syz_currentIndex = 0;
+
+    // 变量功能：获取所有选项卡按钮（ NodeList 顺序与面板一一对应）
+    var syz_tabBtns = document.querySelectorAll('.syz_tab-btn');
+
+    // 变量功能：获取所有选项卡面板
+    var syz_tabPanels = document.querySelectorAll('.syz_tab-panel');
+
+    // 函数功能：切换到指定索引的选项卡——移除所有按钮的选中样式和面板显示状态，再为当前索引的按钮和面板添加激活类
+    function syz_switchTab(syz_index) {
+      syz_currentIndex = syz_index;
+      for (var syz_i = 0; syz_i < syz_tabBtns.length; syz_i++) {
+        syz_tabBtns[syz_i].classList.remove('syz_active');
+        syz_tabPanels[syz_i].classList.remove('syz_show');
+      }
+      syz_tabBtns[syz_index].classList.add('syz_active');
+      syz_tabPanels[syz_index].classList.add('syz_show');
+    }
+
+    // 函数功能：为每个选项卡按钮绑定点击事件（用立即执行函数闭包保存索引），点击时调用 syz_switchTab 切换到对应面板
+    for (var syz_j = 0; syz_j < syz_tabBtns.length; syz_j++) {
+      (function (syz_k) {
+        syz_tabBtns[syz_k].addEventListener('click', function () {
+          syz_switchTab(syz_k);
+        });
+      })(syz_j);
+    }
+  </script>
+</body>
+</html>

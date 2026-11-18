@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周24002120626
+  建立时间：2026-11-18
+  使用大模型：DeepSeek-V4.1-Flash
+  功能名称：摇一摇抽今日菜谱（devicemotion 重力感应 + 降级方案）
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>摇一摇 · 今日菜谱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+            color: #2f2749;
+            background:
+                radial-gradient(circle at 8% 4%, #ffe6d6 0%, transparent 46%),
+                radial-gradient(circle at 94% 2%, #e8dcff 0%, transparent 40%),
+                linear-gradient(180deg, #fffdfb 0%, #f6f0fb 100%);
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .syz_app {
+            max-width: 460px;
+            margin: 0 auto;
+        }
+        .syz_back-home {
+            display: inline-block;
+            margin-bottom: 18px;
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #eee4f8;
+            color: #6d4fc4;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .syz_back-home:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .syz_head {
+            text-align: center;
+            margin-bottom: 26px;
+        }
+        .syz_head h1 {
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: #3a2c62;
+        }
+        .syz_head p {
+            margin-top: 10px;
+            color: #9c90b8;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        /* 摇一摇图标：用纯 CSS 画一个会轻微晃动的手机 */
+        .syz_shake-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 26px;
+        }
+        .syz_phone {
+            width: 78px;
+            height: 132px;
+            border: 5px solid #8a6be0;
+            border-radius: 16px;
+            position: relative;
+            background: #f4efff;
+            box-shadow: 0 10px 24px rgba(120, 86, 200, 0.2);
+            animation: syz_shake 1.6s ease-in-out infinite;
+        }
+        .syz_phone::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 8px;
+            width: 26px;
+            height: 5px;
+            margin-left: -13px;
+            border-radius: 999px;
+            background: #c9b6f5;
+        }
+        .syz_phone::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 9px;
+            width: 24px;
+            height: 24px;
+            margin-left: -12px;
+            border-radius: 50%;
+            background: #d9c9fb;
+        }
+        @keyframes syz_shake {
+            0%, 100% { transform: rotate(0deg); }
+            20% { transform: rotate(-10deg); }
+            40% { transform: rotate(10deg); }
+            60% { transform: rotate(-7deg); }
+            80% { transform: rotate(7deg); }
+        }
+        /* 结果区：等待状态与抽到的菜都放在这里 */
+        .syz_result {
+            min-height: 210px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+        }
+        .syz_wait {
+            color: #a196bb;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .syz_dish {
+            width: 100%;
+            padding: 28px 24px;
+            border-radius: 20px;
+            color: #fff;
+            background: linear-gradient(135deg, #9b7cf0 0%, #6a45c7 100%);
+            box-shadow: 0 16px 34px rgba(106, 69, 199, 0.28);
+            text-align: center;
+        }
+        .syz_dish-tag {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 3px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.22);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .syz_dish-name {
+            font-size: 28px;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+        }
+        .syz_dish-desc {
+            font-size: 13.5px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.94);
+        }
+        /* 抽中结果时的弹出动画：缩小淡入 → 略微放大 → 回到原大小 */
+        @keyframes syz_pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            60% { transform: scale(1.06); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .syz_pop {
+            animation: syz_pop 0.45s ease;
+        }
+        /* 降级提示与按钮：设备不支持时才显示 */
+        .syz_fallback {
+            margin-top: 4px;
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: #fff6ec;
+            border: 1px solid #f6e0c8;
+            text-align: center;
+        }
+        .syz_fallback p {
+            font-size: 13.5px;
+            color: #b07a3c;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+        .syz_draw-btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffb36b, #f08a3c);
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(240, 138, 60, 0.32);
+        }
+        .syz_draw-btn:active {
+            transform: scale(0.97);
+        }
+        .syz_status {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 12.5px;
+            color: #a196bb;
+            letter-spacing: 0.5px;
+        }
+        /* 说明区：解释为什么必须做降级 */
+        .syz_note {
+            margin-top: 34px;
+            padding: 20px 22px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid #ece5fb;
+        }
+        .syz_note h2 {
+            font-size: 15px;
+            color: #4a3d6b;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .syz_note p {
+            font-size: 13px;
+            line-height: 1.9;
+            color: #7d7396;
+        }
+    </style>
+</head>
+<body>
+    <div class="syz_app">
+        <a class="syz_back-home" href="index.html">返回首页</a>
+
+        <div class="syz_head">
+            <h1>摇一摇 · 今日菜谱</h1>
+            <p>摇一摇手机，抽今日菜谱</p>
+        </div>
+
+        <div class="syz_shake-box">
+            <div class="syz_phone"></div>
+        </div>
+
+        <div class="syz_result" id="syz_result">
+            <p class="syz_wait" id="syz_wait">今天吃什么？摇一摇手机试试</p>
+        </div>
+
+        <div class="syz_fallback" id="syz_fallback" hidden>
+            <p>当前设备不支持，请用手机打开</p>
+            <button class="syz_draw-btn" id="syz_drawBtn" type="button">点我抽一次</button>
+        </div>
+
+        <p class="syz_status" id="syz_status">正在检测重力感应…</p>
+
+        <section class="syz_note">
+            <h2>为什么必须做降级？</h2>
+            <p>
+                devicemotion 依赖设备的重力感应器，并不是所有环境都有：笔记本电脑、部分平板没有传感器；
+                浏览器可能因权限策略拒绝提供数据；页面还可能被直接双击用 file:// 打开而收不到事件。
+                如果不做降级，用户看到的只是一直转圈或一片空白，功能等于不可用。
+                因此先等待一段时间判断有没有收到有效数据，没有就明确提示「当前设备不支持，请用手机打开」，
+                同时给出「点我抽一次」的按钮，让抽菜谱这件事在任何设备上都能完成。
+            </p>
+        </section>
+    </div>
+
+    <script>
+        // 可抽取的菜谱列表：菜名 + 一句简介
+        const syz_DISHES = [
+            { name: '麻婆豆腐', desc: '麻辣鲜香，一勺红油配一碗白米饭刚刚好。' },
+            { name: '宫保鸡丁', desc: '鸡丁滑嫩、花生酥脆，酸甜里带一点糊辣香。' },
+            { name: '糖醋排骨', desc: '糖色亮红、酸甜适口，收汁后每块都裹着酱。' },
+            { name: '清蒸鲈鱼', desc: '大火八分钟，葱丝热油一淋，吃的就是鲜。' },
+            { name: '番茄炒蛋', desc: '家常下饭第一名，汤汁拌饭能吃两碗。' },
+            { name: '红烧牛肉面', desc: '牛肉炖到软烂，汤头浓郁，面条筋道。' },
+            { name: '蒜蓉西兰花', desc: '清爽解腻，蒜香浓郁，配重口味的菜最合适。' },
+            { name: '扬州炒饭', desc: '粒粒分明，虾仁火腿青豆配色，简单又满足。' }
+        ];
+
+        // 摇动判定阈值：accelerationIncludingGravity 的合成加速度超过该值才算摇动
+        const syz_THRESHOLD = 18;
+        // 冷却时间：触发一次后 1.5 秒内不再响应，避免同一次摇动连续抽多次
+        const syz_COOLDOWN = 1500;
+        // 等待传感器数据的时长：超过这个时间还没收到有效数据，就判定为不支持
+        const syz_DETECT_TIME = 1200;
+
+        const syz_result = document.getElementById('syz_result');
+        const syz_fallback = document.getElementById('syz_fallback');
+        const syz_drawBtn = document.getElementById('syz_drawBtn');
+        const syz_status = document.getElementById('syz_status');
+
+        let syz_lastShakeTime = 0;    // 上一次成功触发摇动的时间戳
+        let syz_hasMotionData = false; // 是否收到过带数值的 devicemotion 数据
+        let syz_lastIndex = -1;       // 上一次抽到的菜，尽量避免连续抽到同一道
+        let syz_detectTimer = null;   // 检测传感器是否可用的定时器
+
+        // 函数功能：随机抽一道菜并渲染结果，同时播放弹出动画
+        function syz_pickDish() {
+            let syz_index = Math.floor(Math.random() * syz_DISHES.length);
+
+            // 如果和上一次相同，就顺延一位，避免连续两次都是同一道菜
+            if (syz_index === syz_lastIndex) {
+                syz_index = (syz_index + 1) % syz_DISHES.length;
+            }
+            syz_lastIndex = syz_index;
+
+            const syz_dish = syz_DISHES[syz_index];
+            syz_result.innerHTML =
+                '<div class="syz_dish" id="syz_dishCard">' +
+                    '<span class="syz_dish-tag">今日推荐</span>' +
+                    '<h2 class="syz_dish-name">' + syz_dish.name + '</h2>' +
+                    '<p class="syz_dish-desc">' + syz_dish.desc + '</p>' +
+                '</div>';
+
+            // 重新触发动画：先移除类名并强制读取一次布局，再加回去
+            const syz_dishCard = document.getElementById('syz_dishCard');
+            syz_dishCard.classList.remove('syz_pop');
+            void syz_dishCard.offsetWidth;
+            syz_dishCard.classList.add('syz_pop');
+        }
+
+        // 函数功能：显示降级提示与「点我抽一次」按钮（不支持 devicemotion 或收不到数据时调用）
+        function syz_showFallback() {
+            syz_fallback.hidden = false;
+            syz_status.textContent = '未检测到重力感应数据，已切换到手动抽签';
+        }
+
+        // 函数功能：监听 devicemotion，取 accelerationIncludingGravity 计算合成加速度，超过阈值且不在冷却期时抽菜
+        function syz_onMotion(syz_event) {
+            const syz_acc = syz_event.accelerationIncludingGravity;
+            if (!syz_acc || syz_acc.x === null || syz_acc.x === undefined) {
+                return;
+            }
+
+            // 第一次收到有效数据：说明设备支持，关闭降级提示
+            if (!syz_hasMotionData) {
+                syz_hasMotionData = true;
+                clearTimeout(syz_detectTimer);
+                syz_fallback.hidden = true;
+                syz_status.textContent = '重力感应已开启，摇一摇手机即可抽菜';
+            }
+
+            // 合成加速度：三个方向分量的平方和开方，静止时约等于重力加速度 9.8
+            const syz_x = syz_acc.x || 0;
+            const syz_y = syz_acc.y || 0;
+            const syz_z = syz_acc.z || 0;
+            const syz_total = Math.sqrt(syz_x * syz_x + syz_y * syz_y + syz_z * syz_z);
+
+            if (syz_total < syz_THRESHOLD) {
+                return;
+            }
+
+            // 冷却期内直接忽略，防止一次摇动被连续判定为多次
+            const syz_now = Date.now();
+            if (syz_now - syz_lastShakeTime < syz_COOLDOWN) {
+                return;
+            }
+            syz_lastShakeTime = syz_now;
+
+            syz_pickDish();
+            syz_status.textContent = '已抽到：' + syz_DISHES[syz_lastIndex].name + '（' + syz_total.toFixed(1) + ' m/s²）';
+        }
+
+        // 函数功能：页面初始化，检查是否支持 devicemotion、绑定监听与降级按钮，并在超时后显示降级提示
+        function syz_init() {
+            // 有些环境根本没有这个事件构造函数，直接降级
+            if (typeof window.DeviceMotionEvent === 'undefined') {
+                syz_showFallback();
+            } else {
+                window.addEventListener('devicemotion', syz_onMotion);
+
+                // 浏览器有这个接口不代表会有数据（比如电脑），等待一段时间做二次判断
+                syz_detectTimer = setTimeout(function () {
+                    if (!syz_hasMotionData) {
+                        syz_showFallback();
+                    }
+                }, syz_DETECT_TIME);
+            }
+
+            // 降级按钮：手动抽一次，同样走动画
+            syz_drawBtn.addEventListener('click', function () {
+                syz_pickDish();
+                syz_status.textContent = '已手动抽取：' + syz_DISHES[syz_lastIndex].name;
+            });
+        }
+
+        syz_init();
+    </script>
+</body>
+</html>

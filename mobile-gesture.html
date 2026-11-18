@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周24002120626
+  建立时间：2026-11-18
+  使用大模型：DeepSeek-V4.1-Flash
+  功能名称：移动端美食卡片左右滑动切换
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>美食卡片 · 左右滑动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            padding: 20px 16px 46px;
+            color: #2f2749;
+            background:
+                radial-gradient(circle at 8% 4%, #ffe9d9 0%, transparent 46%),
+                radial-gradient(circle at 94% 2%, #f3e4ff 0%, transparent 40%),
+                linear-gradient(180deg, #fffdfb 0%, #f7f2fb 100%);
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .syz_app {
+            max-width: 460px;
+            margin: 0 auto;
+        }
+        .syz_back-home {
+            display: inline-block;
+            margin-bottom: 18px;
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #eee4f8;
+            color: #6d4fc4;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .syz_back-home:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .syz_head {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .syz_head h1 {
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: #3a2c62;
+        }
+        .syz_head p {
+            margin-top: 8px;
+            color: #9c90b8;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        /* 舞台：只允许纵向手势交给浏览器（页面可上下滚动），横向手势留给左右滑动 */
+        .syz_stage {
+            overflow: hidden;
+            border-radius: 22px;
+            box-shadow: 0 16px 36px rgba(120, 86, 200, 0.16);
+            touch-action: pan-y;
+        }
+        .syz_track {
+            display: flex;
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+        .syz_card {
+            flex: 0 0 100%;
+            min-height: 340px;
+            padding: 28px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            color: #fff;
+            position: relative;
+        }
+        .syz_card::after {
+            content: "";
+            position: absolute;
+            right: -40px;
+            top: -40px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .syz_badge {
+            position: absolute;
+            left: 24px;
+            top: 24px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.24);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .syz_dish-name {
+            font-size: 28px;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+        }
+        .syz_dish-desc {
+            font-size: 14px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.94);
+        }
+        .syz_counter {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #6d5c93;
+        }
+        .syz_hint {
+            height: 22px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 13px;
+            color: #b07a3c;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .syz_hint.syz_show {
+            opacity: 1;
+        }
+        .syz_tip {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12.5px;
+            color: #a196bb;
+            line-height: 1.9;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="syz_app">
+        <a class="syz_back-home" href="index.html">返回首页</a>
+        <div class="syz_head">
+            <h1>今日菜单</h1>
+            <p>左右滑动，切换菜品</p>
+        </div>
+
+        <div class="syz_stage" id="syz_stage">
+            <div class="syz_track" id="syz_track"></div>
+        </div>
+
+        <p class="syz_counter" id="syz_counter">第 1/4 张</p>
+        <p class="syz_hint" id="syz_hint"></p>
+
+        <p class="syz_tip">左滑看下一道菜 · 右滑回上一道菜<br>手机浏览器打开体验最佳</p>
+    </div>
+
+    <script>
+        // 四道菜的数据：菜名、简介、卡片渐变背景
+        const syz_DISHES = [
+            {
+                name: '麻婆豆腐',
+                desc: '嫩豆腐配牛肉末，郫县豆瓣炒出红油，起锅前撒一把花椒面，麻、辣、烫、香四味俱全。',
+                bg: 'linear-gradient(135deg, #ff9a5a 0%, #e8453c 100%)'
+            },
+            {
+                name: '宫保鸡丁',
+                desc: '鸡腿肉切丁上浆，与油酥花生同炒，糖醋汁勾出荔枝味，酸甜里透着一丝干辣椒的糊香。',
+                bg: 'linear-gradient(135deg, #f6c05c 0%, #d9822b 100%)'
+            },
+            {
+                name: '糖醋排骨',
+                desc: '小排焯水后小火慢煸，冰糖炒糖色裹匀，收汁时淋香醋，外皮亮红、酸甜适口。',
+                bg: 'linear-gradient(135deg, #f97a8a 0%, #c02f5b 100%)'
+            },
+            {
+                name: '清蒸鲈鱼',
+                desc: '鲜活鲈鱼改刀上锅，八分钟大火蒸透，铺葱丝淋热油与蒸鱼豉油，肉质细嫩清甜。',
+                bg: 'linear-gradient(135deg, #5ec7c0 0%, #2b7fa8 100%)'
+            }
+        ];
+
+        // 滑动判定阈值（px）与连滑冷却时间（ms）
+        const syz_THRESHOLD = 40;
+        const syz_COOLDOWN = 300;
+
+        let syz_index = 0;          // 当前第几张（从 0 开始）
+        let syz_startX = 0;         // 手指按下时的横坐标
+        let syz_lastSwitch = 0;     // 上一次成功切换的时间戳
+        let syz_hintTimer = null;   // 提示文字的隐藏定时器
+
+        // 函数功能：把四道菜渲染成横向排列的卡片，渐变背景由数据里的 bg 决定
+        function syz_renderCards() {
+            const syz_track = document.getElementById('syz_track');
+            syz_track.innerHTML = syz_DISHES.map(function (syz_dish, syz_i) {
+                return '<div class="syz_card" style="background:' + syz_dish.bg + '">' +
+                            '<span class="syz_badge">第 ' + (syz_i + 1) + ' 道</span>' +
+                            '<h2 class="syz_dish-name">' + syz_dish.name + '</h2>' +
+                            '<p class="syz_dish-desc">' + syz_dish.desc + '</p>' +
+                       '</div>';
+            }).join('');
+        }
+
+        // 函数功能：按当前索引平移卡片轨道，并更新底部「第 X/4 张」计数
+        function syz_updateView() {
+            const syz_track = document.getElementById('syz_track');
+            const syz_counter = document.getElementById('syz_counter');
+            syz_track.style.transform = 'translateX(-' + syz_index * 100 + '%)';
+            syz_counter.textContent = '第 ' + (syz_index + 1) + '/' + syz_DISHES.length + ' 张';
+        }
+
+        // 函数功能：显示边界提示文字，1.2 秒后自动淡出
+        function syz_showHint(syz_text) {
+            const syz_hint = document.getElementById('syz_hint');
+            syz_hint.textContent = syz_text;
+            syz_hint.classList.add('syz_show');
+            clearTimeout(syz_hintTimer);
+            syz_hintTimer = setTimeout(function () {
+                syz_hint.classList.remove('syz_show');
+            }, 1200);
+        }
+
+        // 函数功能：手指按下时记录起点横坐标
+        function syz_onTouchStart(syz_e) {
+            syz_startX = syz_e.touches[0].clientX;
+        }
+
+        // 函数功能：手指抬起时用 changedTouches[0] 计算横向位移，超过 40px 判定为滑动，并按冷却时间决定是否切换
+        function syz_onTouchEnd(syz_e) {
+            const syz_dx = syz_e.changedTouches[0].clientX - syz_startX;
+
+            // 位移不足阈值，视为普通点击/纵向滚动，不做切换
+            if (Math.abs(syz_dx) < syz_THRESHOLD) {
+                return;
+            }
+
+            // 冷却中：防止快速连滑一次跳两张
+            if (Date.now() - syz_lastSwitch < syz_COOLDOWN) {
+                return;
+            }
+
+            if (syz_dx < 0) {
+                // 左滑：下一张
+                if (syz_index >= syz_DISHES.length - 1) {
+                    syz_showHint('已经是最后一张');
+                    return;
+                }
+                syz_index++;
+            } else {
+                // 右滑：上一张
+                if (syz_index <= 0) {
+                    syz_showHint('已经是第一张');
+                    return;
+                }
+                syz_index--;
+            }
+
+            syz_lastSwitch = Date.now();
+            syz_updateView();
+        }
+
+        // 函数功能：页面初始化，渲染卡片、绑定 touchstart / touchend 并显示第一张
+        function syz_init() {
+            syz_renderCards();
+
+            const syz_stage = document.getElementById('syz_stage');
+            syz_stage.addEventListener('touchstart', syz_onTouchStart);
+            syz_stage.addEventListener('touchend', syz_onTouchEnd);
+
+            syz_updateView();
+        }
+
+        syz_init();
+    </script>
+</body>
+</html>

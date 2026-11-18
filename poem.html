@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周
+  建立时间：2026-11-13
+  使用大模型：DeepSeek-V4.1-Flash
+  功能名称：诗词卡片展示（上图下文，数据来自本地服务器）
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>诗词卡片</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            padding: 56px 22px 72px;
+            color: #2f2749;
+            background:
+                radial-gradient(circle at 12% 4%, #e9d9ff 0%, transparent 42%),
+                radial-gradient(circle at 90% 0%, #ddd4ff 0%, transparent 38%),
+                linear-gradient(180deg, #fbf9ff 0%, #f2ecfd 100%);
+            background-attachment: fixed;
+        }
+        .syz_container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        .syz_head {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .syz_head h1 {
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: #3a2c62;
+        }
+        .syz_head p {
+            margin-top: 10px;
+            color: #9285b3;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .syz_list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .syz_card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ece5fb;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 22px rgba(120, 86, 200, 0.08);
+            transition: transform 0.28s, box-shadow 0.28s;
+        }
+        .syz_card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(120, 86, 200, 0.18);
+        }
+        .syz_pic {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            background: #f0ecfb;
+        }
+        .syz_text {
+            padding: 20px 22px 24px;
+        }
+        .syz_title {
+            font-size: 17px;
+            color: #352a55;
+            margin-bottom: 10px;
+        }
+        .syz_content {
+            font-size: 13.5px;
+            line-height: 1.8;
+            color: #7d7396;
+        }
+        .syz_authors {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .syz_authors span {
+            padding: 6px 14px;
+            background: #f5f0ff;
+            border: 1px solid #e6dbfb;
+            border-radius: 999px;
+            font-size: 12.5px;
+            color: #6d4fc4;
+        }
+        .syz_title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .syz_title-row .syz_title {
+            margin-bottom: 0;
+        }
+        .syz_author {
+            flex-shrink: 0;
+            padding: 2px 10px;
+            background: #f6f1ff;
+            border-radius: 999px;
+            font-size: 12px;
+            color: #8a6be0;
+        }
+        .syz_toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .syz_search {
+            width: 320px;
+            max-width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #e2d8f7;
+            border-radius: 999px;
+            font-size: 14px;
+            color: #4a3d6b;
+            background: rgba(255, 255, 255, 0.92);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .syz_search:focus {
+            border-color: #a98bf0;
+            box-shadow: 0 0 0 4px rgba(169, 139, 240, 0.14);
+        }
+        .syz_sort-btn {
+            padding: 10px 20px;
+            border: 1px solid #e2d8f7;
+            border-radius: 999px;
+            font-size: 13.5px;
+            color: #6d4fc4;
+            background: #f5f0ff;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .syz_sort-btn:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .syz_state {
+            text-align: center;
+            color: #9285b3;
+            font-size: 14px;
+            padding: 40px 0;
+            grid-column: 1 / -1;
+        }
+        .syz_back-home {
+            display: inline-block;
+            margin-bottom: 24px;
+            padding: 8px 16px;
+            background: #f3edff;
+            color: #6d4fc4;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .syz_back-home:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="syz_container">
+        <a class="syz_back-home" href="index.html">返回首页</a>
+        <div class="syz_head">
+            <h1>诗词卡片</h1>
+            <p>上图下文 · 数据来自 db/db.json（端口 3004）</p>
+        </div>
+        <div class="syz_authors" id="syz_authors"></div>
+        <div class="syz_toolbar">
+            <input class="syz_search" id="syz_search" type="text" placeholder="输入关键词，搜索标题或正文…">
+            <button class="syz_sort-btn" id="syz_sort">按标题长度排序</button>
+        </div>
+        <div class="syz_list" id="syz_list">
+            <div class="syz_state">正在加载诗词…</div>
+        </div>
+    </div>
+
+    <script>
+        // 数据服务器地址：写成绝对地址，双击用 file:// 打开页面时也能请求到 3004 端口
+        const syz_API = 'http://localhost:3004';
+
+        // 接口返回的全部诗词；排序状态：null 未排序、true 升序、false 降序
+        let syz_allPoems = [];
+        let syz_sortAsc = null;
+
+        // 函数功能：把诗词数组渲染成「上图下文」卡片，没有数据时给出空状态提示
+        function syz_renderList(syz_items) {
+            const syz_list = document.getElementById('syz_list');
+            if (!syz_items.length) {
+                syz_list.innerHTML = '<div class="syz_state">没有匹配的诗词，换个关键词试试。</div>';
+                return;
+            }
+            syz_list.innerHTML = syz_items.map(function (syz_item) {
+                return '<div class="syz_card">' +
+                    '<img class="syz_pic" src="' + syz_API + '/api/img?u=' + encodeURIComponent(syz_item.pic) + '" alt="' + syz_item.title + '">' +
+                    '<div class="syz_text">' +
+                        '<div class="syz_title-row">' +
+                            '<h3 class="syz_title">' + syz_item.title + '</h3>' +
+                            '<span class="syz_author">' + syz_item.author + '</span>' +
+                        '</div>' +
+                        '<p class="syz_content">' + syz_item.content + '</p>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // 函数功能：按搜索框关键词筛选（标题或正文匹配），并按当前排序状态排序后渲染，全程不重新请求接口
+        function syz_refresh() {
+            const syz_keyword = document.getElementById('syz_search').value.trim();
+
+            let syz_result = syz_allPoems.filter(function (syz_item) {
+                return !syz_keyword ||
+                    syz_item.title.indexOf(syz_keyword) > -1 ||
+                    syz_item.content.indexOf(syz_keyword) > -1;
+            });
+
+            if (syz_sortAsc !== null) {
+                syz_result = syz_result.slice().sort(function (syz_a, syz_b) {
+                    return syz_sortAsc ? syz_a.title.length - syz_b.title.length
+                        : syz_b.title.length - syz_a.title.length;
+                });
+            }
+            syz_renderList(syz_result);
+        }
+
+        // 函数功能：用 Promise.all 并发请求 /api/poems 与 /api/authors，两份数据都到齐后一起渲染，并绑定搜索与排序交互
+        function syz_loadAll() {
+            const syz_authorBar = document.getElementById('syz_authors');
+            const syz_search = document.getElementById('syz_search');
+            const syz_sortBtn = document.getElementById('syz_sort');
+            const syz_list = document.getElementById('syz_list');
+
+            Promise.all([
+                fetch(syz_API + '/api/poems').then(function (syz_res) {
+                    return syz_res.json();
+                }),
+                fetch(syz_API + '/api/authors').then(function (syz_res) {
+                    return syz_res.json();
+                })
+            ])
+                .then(function (syz_results) {
+                    const syz_poemRes = syz_results[0];
+                    const syz_authorRes = syz_results[1];
+
+                    if (syz_poemRes.code !== 0 || syz_authorRes.code !== 0) {
+                        throw new Error('接口返回异常');
+                    }
+
+                    syz_allPoems = syz_poemRes.data;
+
+                    // 作者列表：渲染成标签条
+                    syz_authorBar.innerHTML = syz_authorRes.data.map(function (syz_author) {
+                        return '<span>' + syz_author.name + ' · ' + syz_author.dynasty + '</span>';
+                    }).join('');
+
+                    syz_refresh();
+
+                    // 输入即筛选：数据已在内存里，不需要重新请求
+                    syz_search.addEventListener('input', syz_refresh);
+
+                    // 排序按钮：第一次按标题长度升序，再点切换为降序
+                    syz_sortBtn.addEventListener('click', function () {
+                        syz_sortAsc = syz_sortAsc === true ? false : true;
+                        syz_sortBtn.textContent = syz_sortAsc ? '标题长度 ↑ 升序' : '标题长度 ↓ 降序';
+                        syz_refresh();
+                    });
+                })
+                .catch(function (syz_err) {
+                    syz_list.innerHTML = '<div class="syz_state">加载失败：' + syz_err.message +
+                        '<br>请先在 db 目录运行 node server.js，再访问 http://localhost:3004/poem.html</div>';
+                });
+        }
+
+        // 函数功能：页面加载完成后同时请求诗词与作者两份数据
+        window.addEventListener('DOMContentLoaded', syz_loadAll);
+    </script>
+</body>
+</html>
