@@ -187,6 +187,35 @@
         .syz_draw-btn:active {
             transform: scale(0.97);
         }
+        /* iOS 授权区：必须由用户点击按钮触发 requestPermission */
+        .syz_permission {
+            margin-top: 4px;
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: #f5f0ff;
+            border: 1px solid #e6dbfb;
+            text-align: center;
+        }
+        .syz_permission p {
+            font-size: 13.5px;
+            color: #6d4fc4;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+        .syz_enable-btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ab8cf6, #7a56d1);
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(122, 86, 209, 0.3);
+        }
+        .syz_enable-btn:active {
+            transform: scale(0.97);
+        }
         .syz_status {
             margin-top: 18px;
             text-align: center;
@@ -237,13 +266,19 @@
             <button class="syz_draw-btn" id="syz_drawBtn" type="button">点我抽一次</button>
         </div>
 
+        <div class="syz_permission" id="syz_permission" hidden>
+            <p>iPhone / iPad 需要先允许访问“运动与方向”</p>
+            <button class="syz_enable-btn" id="syz_enableBtn" type="button">开启摇一摇</button>
+        </div>
+
         <p class="syz_status" id="syz_status">正在检测重力感应…</p>
 
         <section class="syz_note">
             <h2>为什么必须做降级？</h2>
             <p>
                 devicemotion 依赖设备的重力感应器，并不是所有环境都有：笔记本电脑、部分平板没有传感器；
-                浏览器可能因权限策略拒绝提供数据；页面还可能被直接双击用 file:// 打开而收不到事件。
+                iPhone / iPad 在 iOS 13 之后还要求用户手动点击按钮授权「运动与方向」，不授权同样收不到一条事件；
+                页面如果被双击用 file:// 打开，或者跑在不支持传感器的内置浏览器里，也会拿不到数据。
                 如果不做降级，用户看到的只是一直转圈或一片空白，功能等于不可用。
                 因此先等待一段时间判断有没有收到有效数据，没有就明确提示「当前设备不支持，请用手机打开」，
                 同时给出「点我抽一次」的按钮，让抽菜谱这件事在任何设备上都能完成。
@@ -269,17 +304,20 @@
         // 冷却时间：触发一次后 1.5 秒内不再响应，避免同一次摇动连续抽多次
         const syz_COOLDOWN = 1500;
         // 等待传感器数据的时长：超过这个时间还没收到有效数据，就判定为不支持
-        const syz_DETECT_TIME = 1200;
+        const syz_DETECT_TIME = 2000;
 
         const syz_result = document.getElementById('syz_result');
         const syz_fallback = document.getElementById('syz_fallback');
         const syz_drawBtn = document.getElementById('syz_drawBtn');
+        const syz_permission = document.getElementById('syz_permission');
+        const syz_enableBtn = document.getElementById('syz_enableBtn');
         const syz_status = document.getElementById('syz_status');
 
         let syz_lastShakeTime = 0;    // 上一次成功触发摇动的时间戳
         let syz_hasMotionData = false; // 是否收到过带数值的 devicemotion 数据
         let syz_lastIndex = -1;       // 上一次抽到的菜，尽量避免连续抽到同一道
         let syz_detectTimer = null;   // 检测传感器是否可用的定时器
+        let syz_listening = false;    // 是否已经注册过 devicemotion 监听，避免重复绑定
 
         // 函数功能：随机抽一道菜并渲染结果，同时播放弹出动画
         function syz_pickDish() {
@@ -348,20 +386,52 @@
             syz_status.textContent = '已抽到：' + syz_DISHES[syz_lastIndex].name + '（' + syz_total.toFixed(1) + ' m/s²）';
         }
 
-        // 函数功能：页面初始化，检查是否支持 devicemotion、绑定监听与降级按钮，并在超时后显示降级提示
+        // 函数功能：开始监听 devicemotion，并在 2 秒内没有收到数据时切换到手动抽签
+        function syz_startMotion() {
+            if (!syz_listening) {
+                window.addEventListener('devicemotion', syz_onMotion);
+                syz_listening = true;
+            }
+            clearTimeout(syz_detectTimer);
+            syz_detectTimer = setTimeout(function () {
+                if (!syz_hasMotionData) {
+                    syz_showFallback();
+                }
+            }, syz_DETECT_TIME);
+        }
+
+        // 函数功能：iOS 13 起必须由用户点击按钮申请运动传感器权限，授权成功后才注册 devicemotion 监听
+        function syz_requestPermission() {
+            syz_permission.hidden = false;
+            syz_status.textContent = '请先点击「开启摇一摇」允许访问运动传感器';
+
+            syz_enableBtn.addEventListener('click', function () {
+                window.DeviceMotionEvent.requestPermission().then(function (syz_state) {
+                    syz_permission.hidden = true;
+                    if (syz_state === 'granted') {
+                        syz_startMotion();
+                        syz_status.textContent = '已获得权限，正在检测重力感应…';
+                    } else {
+                        syz_showFallback();
+                        syz_status.textContent = '未允许访问运动传感器，已切换到手动抽签';
+                    }
+                }).catch(function () {
+                    syz_permission.hidden = true;
+                    syz_showFallback();
+                });
+            });
+        }
+
+        // 函数功能：页面初始化，判断设备能力——没有 devicemotion 直接降级，需要授权则先显示授权按钮，否则直接开始监听
         function syz_init() {
             // 有些环境根本没有这个事件构造函数，直接降级
             if (typeof window.DeviceMotionEvent === 'undefined') {
                 syz_showFallback();
+            } else if (typeof window.DeviceMotionEvent.requestPermission === 'function') {
+                // iOS / iPadOS 13+：不授权的话一条事件都收不到
+                syz_requestPermission();
             } else {
-                window.addEventListener('devicemotion', syz_onMotion);
-
-                // 浏览器有这个接口不代表会有数据（比如电脑），等待一段时间做二次判断
-                syz_detectTimer = setTimeout(function () {
-                    if (!syz_hasMotionData) {
-                        syz_showFallback();
-                    }
-                }, syz_DETECT_TIME);
+                syz_startMotion();
             }
 
             // 降级按钮：手动抽一次，同样走动画
