@@ -242,6 +242,32 @@
             line-height: 1.9;
             color: #7d7396;
         }
+        /* 手机端效果演示视频 */
+        .syz_demo {
+            margin-top: 24px;
+            padding: 20px 22px 22px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid #ece5fb;
+        }
+        .syz_demo h2 {
+            font-size: 15px;
+            color: #4a3d6b;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+        .syz_demo-video {
+            display: block;
+            width: 100%;
+            border-radius: 14px;
+            background: #16111f;
+        }
+        .syz_demo p {
+            margin-top: 12px;
+            font-size: 12.5px;
+            line-height: 1.8;
+            color: #a196bb;
+        }
     </style>
 </head>
 <body>
@@ -283,6 +309,13 @@
                 因此先等待一段时间判断有没有收到有效数据，没有就明确提示「当前设备不支持，请用手机打开」，
                 同时给出「点我抽一次」的按钮，让抽菜谱这件事在任何设备上都能完成。
             </p>
+        </section>
+
+        <section class="syz_demo">
+            <h2>手机端效果演示</h2>
+            <video class="syz_demo-video" src="video(50).mp4"
+                   controls playsinline webkit-playsinline preload="metadata"></video>
+            <p>视频演示：在手机浏览器中摇一摇手机，抽取今日菜谱的完整效果。</p>
         </section>
     </div>
 

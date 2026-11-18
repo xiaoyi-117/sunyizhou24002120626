@@ -129,6 +129,32 @@
             opacity: 0;
             visibility: hidden;
         }
+        /* 手机端效果演示视频 */
+        .syz_demo {
+            margin-top: 24px;
+            padding: 20px 22px 22px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid #ece5fb;
+        }
+        .syz_demo h2 {
+            font-size: 15px;
+            color: #4a3d6b;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+        .syz_demo-video {
+            display: block;
+            width: 100%;
+            border-radius: 14px;
+            background: #16111f;
+        }
+        .syz_demo p {
+            margin-top: 12px;
+            font-size: 12.5px;
+            line-height: 1.8;
+            color: #a196bb;
+        }
     </style>
 </head>
 <body>
@@ -145,6 +171,13 @@
 
         <p class="syz_status">当前缩放：<span id="syz_scaleText">1.0×</span></p>
         <p class="syz_tip">缩放范围 1～4 倍，松开手指后自动回到边界内</p>
+
+        <section class="syz_demo">
+            <h2>手机端效果演示</h2>
+            <video class="syz_demo-video" src="video(51).mp4"
+                   controls playsinline webkit-playsinline preload="metadata"></video>
+            <p>视频演示：在手机上双指缩放、单指拖动、双击放大图片的完整效果。</p>
+        </section>
     </div>
 
     <div class="syz_toast" id="syz_toast">双指缩放请用手机打开</div>
