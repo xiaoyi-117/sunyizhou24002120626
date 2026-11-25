@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!--
+  作者：孙溢周24002120626
+  建立时间：2026-11-25
+  使用大模型：DeepSeek-V4.1-Flash
+  功能名称：发布测试（确认线上是否成功发布最新版本）
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            padding: 56px 22px 72px;
+            color: #2f2749;
+            background:
+                radial-gradient(circle at 12% 4%, #e9d9ff 0%, transparent 42%),
+                radial-gradient(circle at 90% 0%, #ddd4ff 0%, transparent 38%),
+                linear-gradient(180deg, #fbf9ff 0%, #f2ecfd 100%);
+            background-attachment: fixed;
+        }
+        .syz_container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .syz_back-home {
+            display: inline-block;
+            margin-bottom: 24px;
+            padding: 8px 16px;
+            background: #f3edff;
+            color: #6d4fc4;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .syz_back-home:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .syz_head {
+            text-align: center;
+            margin-bottom: 34px;
+        }
+        .syz_head h1 {
+            font-size: 30px;
+            letter-spacing: 3px;
+            color: #3a2c62;
+        }
+        .syz_head p {
+            margin-top: 10px;
+            color: #9285b3;
+            font-size: 13.5px;
+            letter-spacing: 1px;
+        }
+        .syz_panel {
+            margin-bottom: 20px;
+            padding: 22px 24px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid #ece5fb;
+            border-radius: 18px;
+            box-shadow: 0 6px 22px rgba(120, 86, 200, 0.07);
+        }
+        .syz_panel h2 {
+            font-size: 15px;
+            color: #4a3d6b;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .syz_row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 9px 0;
+            border-bottom: 1px dashed #eee7fb;
+            font-size: 13px;
+        }
+        .syz_row:last-child {
+            border-bottom: none;
+        }
+        .syz_row span:first-child {
+            flex-shrink: 0;
+            color: #9285b3;
+        }
+        .syz_row span:last-child {
+            color: #4a3d6b;
+            text-align: right;
+            word-break: break-all;
+        }
+        .syz_state {
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: #f4efff;
+            color: #8a8a9a;
+        }
+        .syz_state.syz_ok {
+            background: #eaf7ee;
+            color: #3f9159;
+        }
+        .syz_links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .syz_links a {
+            padding: 9px 16px;
+            background: #f3edff;
+            color: #6d4fc4;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: background 0.25s, color 0.25s;
+        }
+        .syz_links a:hover {
+            background: linear-gradient(135deg, #ab8cf6, #8565d8);
+            color: #fff;
+        }
+        .syz_foot {
+            margin-top: 30px;
+            text-align: center;
+            color: #a196bb;
+            font-size: 12.5px;
+            line-height: 1.9;
+        }
+        /* 测试区截图展示 */
+        .syz_shots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .syz_shot {
+            display: block;
+            background: #fff;
+            border: 1px solid #ece5fb;
+            border-radius: 14px;
+            overflow: hidden;
+            text-decoration: none;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .syz_shot:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 26px rgba(120, 86, 200, 0.16);
+        }
+        .syz_shot img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-bottom: 1px solid #f4eefc;
+        }
+        .syz_shot p {
+            padding: 11px 13px;
+            font-size: 12.5px;
+            line-height: 1.7;
+            color: #7d7396;
+        }
+        .syz_intro {
+            margin-bottom: 18px;
+            font-size: 13px;
+            line-height: 1.9;
+            color: #7d7396;
+        }
+        .syz_intro b {
+            color: #6d4fc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="syz_container">
+        <a class="syz_back-home" href="index.html">返回首页</a>
+        <div class="syz_head">
+            <h1>发布测试</h1>
+            <p>孙溢周 · 24002120626 · 用于确认线上发布是否生效</p>
+        </div>
+
+        <section class="syz_panel">
+            <h2>访问信息</h2>
+            <div class="syz_row">
+                <span>当前地址</span>
+                <span id="syz_url">读取中…</span>
+            </div>
+            <div class="syz_row">
+                <span>访问协议</span>
+                <span id="syz_protocol">读取中…</span>
+            </div>
+            <div class="syz_row">
+                <span>页面打开时间</span>
+                <span id="syz_time">读取中…</span>
+            </div>
+            <div class="syz_row">
+                <span>部署标识</span>
+                <span>syz-publish-test-20261125</span>
+            </div>
+        </section>
+
+        <section class="syz_panel">
+            <h2>自检结果</h2>
+            <div class="syz_row">
+                <span>HTML 结构加载</span>
+                <span class="syz_state syz_ok" id="syz_checkHtml">通过</span>
+            </div>
+            <div class="syz_row">
+                <span>CSS 样式生效</span>
+                <span class="syz_state" id="syz_checkCss">检测中…</span>
+            </div>
+            <div class="syz_row">
+                <span>JavaScript 执行</span>
+                <span class="syz_state" id="syz_checkJs">检测中…</span>
+            </div>
+            <div class="syz_row">
+                <span>移动端视口适配</span>
+                <span class="syz_state" id="syz_checkViewport">检测中…</span>
+            </div>
+        </section>
+
+        <section class="syz_panel">
+            <h2>syz1 项目展示 · 校园二手交易平台</h2>
+            <p class="syz_intro">
+                截图来自项目文件夹 <b>syz1</b>：前端为 <b>syz1/frontend</b>，后端为 <b>syz1/backend</b>（Express），
+                由本地服务 <b>http://localhost:8626</b> 提供接口与大模型能力。以下为四个 AI 功能测试区的实际运行效果，
+                点击图片可查看大图；线上仅展示截图，交互功能需在本地启动后端后访问 syz1/frontend。
+            </p>
+            <div class="syz_shots">
+                <a class="syz_shot" href="img/test/ai-chat.png" target="_blank">
+                    <img src="img/test/ai-chat.png" alt="在线客服测试截图">
+                    <p>service.html · 在线客服：Qwen2.5-7B-Instruct，左侧常见问题快捷提问，右侧多轮对话</p>
+                </a>
+                <a class="syz_shot" href="img/test/kb-rag.png" target="_blank">
+                    <img src="img/test/kb-rag.png" alt="知识库问答测试截图">
+                    <p>kb.html · 知识库问答：RAG 检索增强，文档入库后按相关度召回片段再作答</p>
+                </a>
+                <a class="syz_shot" href="img/test/vision.png" target="_blank">
+                    <img src="img/test/vision.png" alt="图像识别测试截图">
+                    <p>vision.html · 图像识别：Qwen3-VL-8B-Instruct，上传图片后生成结构化文字描述</p>
+                </a>
+                <a class="syz_shot" href="img/test/asr.png" target="_blank">
+                    <img src="img/test/asr.png" alt="语音识别测试截图">
+                    <p>voice.html · 语音识别：qwen-audio-3.0-asr-flash，音频转写并显示时长与字数</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="syz_panel">
+            <h2>页面跳转检查</h2>
+            <div class="syz_links">
+                <a href="index.html">首页</a>
+                <a href="mobile-gesture.html">滑动卡片</a>
+                <a href="mobile-zoom.html">图片缩放</a>
+                <a href="mobile-sensor.html">摇一摇</a>
+                <a href="swiper-task.html">光影展轮播</a>
+                <a href="poem.html">诗词卡片</a>
+            </div>
+        </section>
+
+        <p class="syz_foot">
+            如果看到本页且自检全部为「通过」，说明 HTML、CSS、JavaScript 均已成功部署。<br>
+            页面显示异常时，先强刷（Ctrl + F5）或加 ?v= 参数排除缓存影响。
+        </p>
+    </div>
+
+    <script>
+        // 函数功能：把当前访问地址、协议和页面打开时间填入访问信息区
+        function syz_fillInfo() {
+            document.getElementById('syz_url').textContent = window.location.href;
+            document.getElementById('syz_protocol').textContent = window.location.protocol === 'file:'
+                ? 'file://（本地文件）'
+                : window.location.protocol.replace(':', '');
+            const syz_now = new Date();
+            document.getElementById('syz_time').textContent =
+                syz_now.toLocaleDateString('zh-CN') + ' ' + syz_now.toLocaleTimeString('zh-CN');
+        }
+
+        // 函数功能：逐项检查样式、脚本与视口是否正常，把结果写进自检清单
+        function syz_runCheck() {
+            // 能执行到这个函数本身就说明 JavaScript 正常
+            const syz_js = document.getElementById('syz_checkJs');
+            syz_js.textContent = '通过';
+            syz_js.classList.add('syz_ok');
+
+            // 读回按钮样式：如果 CSS 生效，圆角不会是默认的 0px
+            const syz_btn = document.querySelector('.syz_back-home');
+            const syz_radius = getComputedStyle(syz_btn).borderRadius;
+            const syz_css = document.getElementById('syz_checkCss');
+            syz_css.textContent = syz_radius !== '0px' ? '通过（圆角 ' + syz_radius + '）' : '异常：样式未生效';
+            if (syz_radius !== '0px') {
+                syz_css.classList.add('syz_ok');
+            }
+
+            // 视口宽度等于屏幕宽度说明 viewport 元信息生效
+            const syz_viewport = document.getElementById('syz_checkViewport');
+            const syz_match = Math.abs(window.innerWidth - window.screen.width) < 2;
+            syz_viewport.textContent = syz_match ? '通过（' + window.innerWidth + 'px）' : '提示：宽度 ' + window.innerWidth + 'px';
+            if (syz_match) {
+                syz_viewport.classList.add('syz_ok');
+            }
+        }
+
+        // 函数功能：页面加载完成后依次执行信息填充与自检
+        function syz_init() {
+            syz_fillInfo();
+            syz_runCheck();
+        }
+
+        window.addEventListener('load', syz_init);
+    </script>
+</body>
+</html>
